@@ -1,0 +1,181 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+   CROWD PRESSURE RADAR - CSS VARIABLES GENERATED FROM tokens.json
+   Swiss Minimalist & Flat Data Density Specification (ui-ux-pro-max + frontend-slides)
+   ============================================================================ */
+
+:root {
+  /* Surface Tokens (Light Mode) */
+  --surface-base: #F8FAFC;
+  --surface-raised: #FFFFFF;
+  --surface-sunken: #F1F5F9;
+  --surface-overlay: #E2E8F0;
+
+  /* Border Tokens */
+  --border-subtle: #E2E8F0;
+  --border-strong: #CBD5E1;
+
+  /* Text Tokens */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+
+  /* Accent & Focus */
+  --accent-default: #2563EB;
+  --accent-hover: #1D4ED8;
+  --accent-focus-ring: #2563EB;
+
+  /* Quad-Coded Status Tokens */
+  --status-clear-text: #15803D;
+  --status-clear-bg: #F0FDF4;
+  --status-clear-border: #86EFAC;
+  --status-clear-chart: #16A34A;
+
+  --status-building-text: #B45309;
+  --status-building-bg: #FFFBEB;
+  --status-building-border: #FDE68A;
+  --status-building-chart: #D97706;
+
+  --status-danger-text: #B91C1C;
+  --status-danger-bg: #FEF2F2;
+  --status-danger-border: #FECACA;
+  --status-danger-chart: #DC2626;
+
+  --status-offline-text: #475569;
+  --status-offline-bg: #F1F5F9;
+  --status-offline-border: #CBD5E1;
+  --status-offline-chart: #64748B;
+}
+
+.dark {
+  /* Surface Tokens (Dark Mode Default for Operations) */
+  --surface-base: #0B0F17;
+  --surface-raised: #111827;
+  --surface-sunken: #070A10;
+  --surface-overlay: #1F2937;
+
+  /* Border Tokens */
+  --border-subtle: #1F2937;
+  --border-strong: #374151;
+
+  /* Text Tokens */
+  --text-primary: #F9FAFB;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+
+  /* Accent & Focus */
+  --accent-default: #3B82F6;
+  --accent-hover: #2563EB;
+  --accent-focus-ring: #3B82F6;
+
+  /* Quad-Coded Status Tokens */
+  --status-clear-text: #4ADE80;
+  --status-clear-bg: #052E16;
+  --status-clear-border: #166534;
+  --status-clear-chart: #22C55E;
+
+  --status-building-text: #FBBF24;
+  --status-building-bg: #451A03;
+  --status-building-border: #92400E;
+  --status-building-chart: #F59E0B;
+
+  --status-danger-text: #F87171;
+  --status-danger-bg: #450A0A;
+  --status-danger-border: #991B1B;
+  --status-danger-chart: #EF4444;
+
+  --status-offline-text: #9CA3AF;
+  --status-offline-bg: #1F2937;
+  --status-offline-border: #374151;
+  --status-offline-chart: #64748B;
+}
+
+/* Base Document Styles */
+body {
+  background-color: var(--surface-base);
+  color: var(--text-primary);
+  font-family: 'Fira Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fluid Typography Utilities using clamp() per frontend-slides */
+.fluid-h1 {
+  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.fluid-h2 {
+  font-size: clamp(1.1rem, 0.95rem + 0.5vw, 1.35rem);
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+.fluid-title {
+  font-size: clamp(0.95rem, 0.85rem + 0.35vw, 1.15rem);
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.fluid-body {
+  font-size: clamp(0.8125rem, 0.78rem + 0.2vw, 0.875rem);
+  line-height: 1.5;
+}
+
+.fluid-caption {
+  font-size: clamp(0.6875rem, 0.65rem + 0.15vw, 0.75rem);
+  line-height: 1.4;
+}
+
+/* Flat Card Surface - 1px Subtle Border, Zero Blur, Zero Heavy Shadows */
+.flat-panel {
+  background-color: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+}
+
+.flat-panel-sunken {
+  background-color: var(--surface-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+}
+
+/* Accessible Focus Ring */
+:focus-visible {
+  outline: 2px solid var(--accent-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Reduced Motion Compliance */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Clean Accessible Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-sunken);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}

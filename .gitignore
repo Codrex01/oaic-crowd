@@ -1,0 +1,24 @@
+# Node Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Production Build Outputs
+dist/
+frontend/dist/
+
+# Cloned External Reference Repositories
+frontend-slides/
+ui-ux-pro-max-skill/
+
+# Python Cache & Scratch Files
+__pycache__/
+*.py[cod]
+*$py.class
+scratch_*.py
+inspect_*.py
+
+# System & Local Logs
+*.log
+.DS_Store
+Thumbs.db

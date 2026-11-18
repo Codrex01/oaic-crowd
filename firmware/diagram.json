@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "author": "Antigravity Embedded Team",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    {
+      "type": "board-ssd1306",
+      "id": "oled",
+      "top": -160,
+      "left": 10,
+      "attrs": { "i2cAddress": "0x3c" }
+    },
+    { "type": "wokwi-led", "id": "ledGreen", "top": -80, "left": 160, "attrs": { "color": "green" } },
+    { "type": "wokwi-led", "id": "ledYellow", "top": -80, "left": 210, "attrs": { "color": "yellow" } },
+    { "type": "wokwi-led", "id": "ledRed", "top": -80, "left": 260, "attrs": { "color": "red" } },
+    { "type": "wokwi-resistor", "id": "rGreen", "top": -30, "left": 160, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "rYellow", "top": -30, "left": 210, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "rRed", "top": -30, "left": 260, "attrs": { "value": "220" } },
+    { "type": "wokwi-buzzer", "id": "buzzer", "top": 120, "left": 180, "attrs": { "volume": "0.1" } },
+    { "type": "wokwi-servo", "id": "servoGate", "top": 240, "left": 160, "attrs": {} },
+    { "type": "wokwi-pushbutton", "id": "btnEntry", "top": 100, "left": -180, "attrs": { "color": "green", "label": "IR Entry (32)" } },
+    { "type": "wokwi-pushbutton", "id": "btnExit", "top": 180, "left": -180, "attrs": { "color": "red", "label": "IR Exit (33)" } },
+    { "type": "wokwi-pushbutton", "id": "btnMock", "top": 260, "left": -180, "attrs": { "color": "blue", "label": "Mock Toggle (4)" } }
+  ],
+  "connections": [
+    [ "esp:GND.1", "oled:GND", "black", [ "v0" ] ],
+    [ "esp:3V3", "oled:VCC", "red", [ "v0" ] ],
+    [ "esp:22", "oled:SCL", "yellow", [ "v0" ] ],
+    [ "esp:21", "oled:SDA", "blue", [ "v0" ] ],
+
+    [ "esp:25", "rGreen:1", "green", [ "h20", "v-40" ] ],
+    [ "rGreen:2", "ledGreen:A", "green", [ "v0" ] ],
+    [ "ledGreen:C", "esp:GND.2", "black", [ "v20", "h-40" ] ],
+
+    [ "esp:26", "rYellow:1", "gold", [ "h20", "v-30" ] ],
+    [ "rYellow:2", "ledYellow:A", "gold", [ "v0" ] ],
+    [ "ledYellow:C", "esp:GND.2", "black", [ "v20", "h-70" ] ],
+
+    [ "esp:27", "rRed:1", "red", [ "h20", "v-20" ] ],
+    [ "rRed:2", "ledRed:A", "red", [ "v0" ] ],
+    [ "ledRed:C", "esp:GND.2", "black", [ "v20", "h-100" ] ],
+
+    [ "esp:14", "buzzer:2", "purple", [ "h30", "v30" ] ],
+    [ "buzzer:1", "esp:GND.2", "black", [ "h-30", "v-20" ] ],
+
+    [ "esp:13", "servoGate:PWM", "orange", [ "h40", "v60" ] ],
+    [ "esp:5V", "servoGate:V+", "red", [ "h50", "v70" ] ],
+    [ "esp:GND.2", "servoGate:GND", "black", [ "h30", "v80" ] ],
+
+    [ "esp:32", "btnEntry:2.r", "green", [ "h-20", "v0" ] ],
+    [ "btnEntry:1.r", "esp:GND.1", "black", [ "h-20", "v-50" ] ],
+
+    [ "esp:33", "btnExit:2.r", "red", [ "h-20", "v0" ] ],
+    [ "btnExit:1.r", "esp:GND.1", "black", [ "h-20", "v-120" ] ],
+
+    [ "esp:4", "btnMock:2.r", "blue", [ "h-20", "v0" ] ],
+    [ "btnMock:1.r", "esp:GND.1", "black", [ "h-20", "v-200" ] ]
+  ],
+  "dependencies": {}
+}
