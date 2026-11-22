@@ -20,6 +20,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   const navItems: NavTabItem[] = [
     { id: 'overview', label: 'Overview' },
     { id: 'detail', label: 'Zone details' },
+    { id: 'demo', label: 'Hardware Sandbox' },
     { id: 'alerts', label: 'Alerts', count: alertCount },
     { id: 'setup', label: 'Setup' },
     { id: 'about', label: 'About & safety' }

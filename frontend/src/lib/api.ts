@@ -1,12 +1,28 @@
-import { ZoneInfo, TelemetryPoint, AlertRecord, OperatorCommand } from '../types';
+import { ZoneInfo, TelemetryPoint, AlertRecord, OperatorCommand, HardwareActuatorState } from '../types';
 
-const API_BASE = '/api';
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
 
 export async function fetchZones(): Promise<ZoneInfo[]> {
   const res = await fetch(`${API_BASE}/zones`);
   if (!res.ok) throw new Error('Failed to fetch zones');
   const data = await res.json();
   return data.zones;
+}
+
+export async function fetchHardwareStatus(): Promise<HardwareActuatorState> {
+  const res = await fetch(`${API_BASE}/esp32/status`);
+  if (!res.ok) throw new Error('Failed to fetch hardware status');
+  return res.json();
+}
+
+export async function simulateSandbox(count: number, cameraOnline?: boolean): Promise<any> {
+  const res = await fetch(`${API_BASE}/simulate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ count, cameraOnline })
+  });
+  if (!res.ok) throw new Error('Failed to send simulation payload');
+  return res.json();
 }
 
 export async function fetchZoneHistory(zoneId: string, minutes = 10): Promise<TelemetryPoint[]> {

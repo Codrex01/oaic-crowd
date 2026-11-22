@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ZoneInfo, AlertRecord, CrowdState, TelemetryPoint } from './types';
-import { fetchZones, fetchAlerts, controlSimulator } from './lib/api';
+import { ZoneInfo, AlertRecord, CrowdState, TelemetryPoint, HardwareActuatorState } from './types';
+import { fetchZones, fetchAlerts, controlSimulator, fetchHardwareStatus } from './lib/api';
 import { GlobalHeader } from './components/GlobalHeader';
 import { Navigation } from './components/Navigation';
 import { OverviewTab } from './components/OverviewTab';
@@ -8,6 +8,7 @@ import { ZoneDetailTab } from './components/ZoneDetailTab';
 import { AlertsTab } from './components/AlertsTab';
 import { SetupTab } from './components/SetupTab';
 import { AboutTab } from './components/AboutTab';
+import { DemoTab } from './components/DemoTab';
 
 export const App: React.FC = () => {
   const initialTab = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tab') || 'overview' : 'overview';
@@ -15,6 +16,7 @@ export const App: React.FC = () => {
   const [selectedZoneId, setSelectedZoneId] = useState<string>('zone-entry-a');
   const [zones, setZones] = useState<ZoneInfo[]>([]);
   const [alerts, setAlerts] = useState<AlertRecord[]>([]);
+  const [hardware, setHardware] = useState<HardwareActuatorState | null>(null);
   const [isWsConnected, setIsWsConnected] = useState<boolean>(false);
   const [lastTelemetryTimestamp, setLastTelemetryTimestamp] = useState<number>(Date.now());
   const [simulatorRunning, setSimulatorRunning] = useState<boolean>(false);
@@ -37,12 +39,14 @@ export const App: React.FC = () => {
   // Load initial data via REST API
   const refreshData = useCallback(async () => {
     try {
-      const [fetchedZones, fetchedAlerts] = await Promise.all([
+      const [fetchedZones, fetchedAlerts, fetchedHw] = await Promise.all([
         fetchZones(),
-        fetchAlerts(50)
+        fetchAlerts(50),
+        fetchHardwareStatus().catch(() => null)
       ]);
       setZones(fetchedZones);
       setAlerts(fetchedAlerts);
+      if (fetchedHw) setHardware(fetchedHw);
     } catch (err) {
       console.warn('[APP] Could not fetch initial REST data:', err);
     }
@@ -99,10 +103,11 @@ export const App: React.FC = () => {
     let reconnectTimer: any = null;
 
     function connect() {
+      const envWs = (import.meta as any).env?.VITE_WS_URL;
       const isHttps = window.location.protocol === 'https:';
       const wsProtocol = isHttps ? 'wss:' : 'ws:';
       const wsHost = window.location.port === '5173' ? 'localhost:3000' : window.location.host;
-      const wsUrl = `${wsProtocol}//${wsHost}`;
+      const wsUrl = envWs || `${wsProtocol}//${wsHost}`;
 
       try {
         ws = new WebSocket(wsUrl);
@@ -118,12 +123,15 @@ export const App: React.FC = () => {
             if (msg.type === 'INITIAL_STATE') {
               if (msg.data.zones) setZones(msg.data.zones);
               if (msg.data.alerts) setAlerts(msg.data.alerts);
+              if (msg.data.hardware) setHardware(msg.data.hardware);
               if (typeof msg.data.simulatorRunning === 'boolean') {
                 setSimulatorRunning(msg.data.simulatorRunning);
               }
               setLastTelemetryTimestamp(Date.now());
             } else if (msg.type === 'TELEMETRY_UPDATE') {
               handleIncomingTelemetry(msg.data);
+            } else if (msg.type === 'HARDWARE_UPDATE' || msg.type === 'FAILOVER_ALERT') {
+              setHardware(msg.data);
             } else if (msg.type === 'SIMULATOR_STATE') {
               setSimulatorRunning(msg.data.isRunning);
             } else if (msg.type === 'ZONE_CONFIG_UPDATED') {
@@ -229,6 +237,10 @@ export const App: React.FC = () => {
               selectedZoneId={selectedZoneId}
               onSelectZoneId={setSelectedZoneId}
             />
+          )}
+
+          {activeTab === 'demo' && (
+            <DemoTab hardware={hardware} />
           )}
 
           {activeTab === 'alerts' && <AlertsTab alerts={alerts} />}

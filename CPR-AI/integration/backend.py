@@ -54,6 +54,7 @@ class TelemetryClient:
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.auth_token}",
+            "x-device-key": self.auth_token,
             "x-source": "cpr-ai-vision"
         }
 

@@ -12,13 +12,14 @@ Features:
 """
 
 import sys
+import os
 import time
 import json
 import urllib.request
 import serial
 import serial.tools.list_ports
 
-SERVER_URL = "http://localhost:5000"
+SERVER_URL = os.getenv("CPR_SERVER_URL", "http://localhost:3000")
 STATUS_ENDPOINT = f"{SERVER_URL}/api/esp32/status"
 TELEMETRY_ENDPOINT = f"{SERVER_URL}/api/telemetry"
 BAUD_RATE = 115200

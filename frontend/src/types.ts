@@ -46,3 +46,24 @@ export interface AlertRecord {
 
 export type OperatorCommand = 'MANUAL_GATE_OPEN' | 'MANUAL_GATE_CLOSE' | 'SILENCE_BUZZER' | 'RESET_ZONE';
 
+export interface HardwareActuatorState {
+  systemMode: 'AI_VISION_PRIMARY' | 'HARDWARE_FAILOVER';
+  cameraOnline: boolean;
+  lastCameraPing: number;
+  currentCount: number;
+  radarEnergy: number;
+  tofDistanceMm: number;
+  ledState: { red: boolean; yellow: boolean; green: boolean };
+  rgb: { r: number; g: number; b: number };
+  ledPins: { red: number; yellow: number; green: number };
+  servoAngle: number;
+  servoStatus: string;
+  buzzer: boolean;
+  oled: {
+    line1: string;
+    line2: string;
+    line3: string;
+    line4: string;
+  };
+}
+

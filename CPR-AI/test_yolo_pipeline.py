@@ -6,13 +6,13 @@ import time
 import json
 import urllib.request
 
-TELEMETRY_URL = "http://localhost:5000/api/telemetry"
-STATUS_URL = "http://localhost:5000/api/esp32/status"
+TELEMETRY_URL = "http://localhost:3000/api/telemetry"
+STATUS_URL = "http://localhost:3000/api/esp32/status"
 
 def send_yolo_detection(count, state_label, density, score):
     payload = {
         "deviceId": "cpr-vision-gate-01",
-        "zoneId": "zone-corridor-a",
+        "zoneId": "zone-entry-a",
         "timestamp": int(time.time()),
         "source": "computer_vision",
         "state": state_label,
@@ -31,7 +31,11 @@ def send_yolo_detection(count, state_label, density, score):
     req = urllib.request.Request(
         TELEMETRY_URL,
         data=data,
-        headers={'Content-Type': 'application/json', 'x-source': 'cpr-ai-vision'}
+        headers={
+            'Content-Type': 'application/json',
+            'x-device-key': 'cpr-secret-key-2026',
+            'x-source': 'cpr-ai-vision'
+        }
     )
     with urllib.request.urlopen(req) as resp:
         return json.loads(resp.read().decode('utf-8'))
@@ -55,7 +59,7 @@ def run_test():
     for tc in test_cases:
         print(f"\n[Test] Sending YOLO detection: {tc['count']} People ({tc['label']})...")
         send_yolo_detection(tc['count'], tc['label'], tc['density'], tc['score'])
-        time.sleep(0.3)
+        time.sleep(0.5)
         status = get_esp32_status()
         
         led = status.get('led')
