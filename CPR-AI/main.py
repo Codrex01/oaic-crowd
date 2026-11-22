@@ -166,7 +166,7 @@ class CPRVisionMaster:
                 "timestamp": int(current_time),
                 "source": "computer_vision",
                 "state": congestion_data["state"],
-                "score": congestion_data["score"],
+                "score": round(congestion_data["score"] * 100.0, 1),
                 "density": congestion_data["density"],
                 "avgSpeed": congestion_data["avg_speed"],
                 "stopGoIndex": congestion_data["stop_go_index"],

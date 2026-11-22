@@ -187,13 +187,30 @@ function requireDeviceAuth(req, res, next) {
 app.post('/api/telemetry', requireDeviceAuth, (req, res) => {
   let body = { ...req.body };
 
+  // Forgiving defaults for targetCount / count from YOLO vision or ESP32
+  const countVal = Number(body.targetCount ?? body.count ?? body.visiblePersons ?? 0);
+  if (body.targetCount === undefined) body.targetCount = countVal;
+  if (body.entryCount === undefined) body.entryCount = 0;
+  if (body.exitCount === undefined) body.exitCount = 0;
+  if (body.density === undefined) body.density = countVal;
+  if (body.avgSpeed === undefined) body.avgSpeed = 1.2;
+  if (body.stopGoIndex === undefined) body.stopGoIndex = 0.0;
+  if (!body.state) {
+    body.state = countVal >= 10 ? 'RED' : (countVal >= 5 ? 'AMBER' : 'GREEN');
+  }
+
   // Normalize score: if score is 0.0 - 1.0, scale to 0 - 100 for charts
   if (typeof body.score === 'number' && body.score <= 1.0 && body.score > 0) {
     body.score = Math.round(body.score * 100);
+  } else if (body.score === undefined) {
+    body.score = countVal >= 10 ? 85.0 : (countVal >= 5 ? 55.0 : Math.min(40.0, countVal * 10.0));
   }
+  
   if (!body.zoneId) body.zoneId = 'zone-entry-a';
   if (!body.deviceId) body.deviceId = 'cpr-vision-gate-01';
   if (!body.timestamp) body.timestamp = Date.now();
+  if (!body.activeAlerts) body.activeAlerts = [];
+  if (!body.firmwareVersion) body.firmwareVersion = '1.0.0';
 
   const parsed = TelemetrySchema.safeParse(body);
   if (!parsed.success) {
