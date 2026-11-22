@@ -6,6 +6,7 @@ import { config } from './config.js';
 import { TelemetrySchema, CommandSchema, ZoneConfigSchema } from './schema.js';
 import { storage } from './storage.js';
 import { simulator } from './simulator.js';
+import { keepAliveEngine } from './keepAlive.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -423,15 +424,36 @@ app.post('/api/simulate', (req, res) => {
   res.json({ status: 'ok', simulatorRunning: simulator.isRunning });
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
+// ----------------------------------------------------------------------------
+// Health Check & Render Anti-Sleep Keep-Alive
+// ----------------------------------------------------------------------------
+const getHealthPayload = () => ({
+  status: 'healthy',
+  uptimeSeconds: Math.floor(process.uptime()),
+  activeWebsockets: wss.clients.size,
+  simulatorActive: simulator.isRunning,
+  hardware: hardwareState,
+  keepAlive: keepAliveEngine.getStats(),
+  version: '3.0.0'
+});
+
+app.get('/health', (req, res) => res.json(getHealthPayload()));
+app.get('/api/health', (req, res) => res.json(getHealthPayload()));
+
+// Keep-Alive status and manual trigger endpoints
+app.get('/api/keepalive', (req, res) => {
   res.json({
-    status: 'healthy',
-    uptimeSeconds: Math.floor(process.uptime()),
-    activeWebsockets: wss.clients.size,
-    simulatorActive: simulator.isRunning,
-    hardware: hardwareState,
-    version: '3.0.0'
+    status: 'ok',
+    keepAlive: keepAliveEngine.getStats()
+  });
+});
+
+app.post('/api/keepalive/ping', async (req, res) => {
+  const result = await keepAliveEngine.ping(config.port);
+  res.json({
+    status: 'ok',
+    triggered: true,
+    keepAlive: result
   });
 });
 
@@ -447,8 +469,12 @@ server.listen(config.port, () => {
   Rate Limit:              ${config.rateLimitReqPerSec} req/sec per device
   ESP32 Status Endpoint:   http://localhost:${config.port}/api/esp32/status
   Live Stream (SSE):       http://localhost:${config.port}/api/stream
+  Keep-Alive Self-Ping:    Active (10m loop -> Render anti-sleep)
 ============================================================
 `);
+
+  // Start 10-minute automated self-ping engine (keeps Render free tier awake)
+  keepAliveEngine.start(config.port);
 });
 
 

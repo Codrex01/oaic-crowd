@@ -1,4 +1,4 @@
-import { ZoneInfo, TelemetryPoint, AlertRecord, OperatorCommand, HardwareActuatorState } from '../types';
+import { ZoneInfo, TelemetryPoint, AlertRecord, OperatorCommand, HardwareActuatorState, KeepAliveStats } from '../types';
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
 
@@ -76,4 +76,21 @@ export async function controlSimulator(action: 'start' | 'stop' | 'toggle' | 'ti
   if (!res.ok) throw new Error('Failed to control simulator');
   return res.json();
 }
+
+export async function fetchKeepAliveStats(): Promise<KeepAliveStats> {
+  const res = await fetch(`${API_BASE}/keepalive`);
+  if (!res.ok) throw new Error('Failed to fetch keep-alive stats');
+  const data = await res.json();
+  return data.keepAlive;
+}
+
+export async function triggerKeepAlivePing(): Promise<KeepAliveStats> {
+  const res = await fetch(`${API_BASE}/keepalive/ping`, {
+    method: 'POST'
+  });
+  if (!res.ok) throw new Error('Failed to trigger keep-alive ping');
+  const data = await res.json();
+  return data.keepAlive;
+}
+
 

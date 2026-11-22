@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ZoneInfo, AlertRecord, CrowdState, TelemetryPoint, HardwareActuatorState } from './types';
-import { fetchZones, fetchAlerts, controlSimulator, fetchHardwareStatus } from './lib/api';
+import { ZoneInfo, AlertRecord, CrowdState, TelemetryPoint, HardwareActuatorState, KeepAliveStats } from './types';
+import { fetchZones, fetchAlerts, controlSimulator, fetchHardwareStatus, fetchKeepAliveStats, triggerKeepAlivePing } from './lib/api';
 import { GlobalHeader } from './components/GlobalHeader';
 import { Navigation } from './components/Navigation';
 import { OverviewTab } from './components/OverviewTab';
@@ -21,6 +21,43 @@ export const App: React.FC = () => {
   const [lastTelemetryTimestamp, setLastTelemetryTimestamp] = useState<number>(Date.now());
   const [simulatorRunning, setSimulatorRunning] = useState<boolean>(false);
   const [isStale, setIsStale] = useState<boolean>(false);
+  const [keepAliveStats, setKeepAliveStats] = useState<KeepAliveStats | null>(null);
+
+  // Manual keep-alive ping trigger
+  const handleTriggerPing = useCallback(async () => {
+    try {
+      const stats = await triggerKeepAlivePing();
+      setKeepAliveStats(stats);
+      console.log('[Render-AntiSleep] Manual keep-alive ping triggered:', stats.lastPingStatus);
+    } catch (err) {
+      console.warn('[Render-AntiSleep] Manual ping failed:', err);
+    }
+  }, []);
+
+  // Automated 10-minute Render Anti-Sleep Keep-Alive loop
+  // Pings backend on startup (waking it up if cold) and every 9.5 minutes
+  useEffect(() => {
+    let timer: any = null;
+
+    const runPing = async () => {
+      try {
+        const stats = await triggerKeepAlivePing();
+        setKeepAliveStats(stats);
+      } catch (err) {
+        fetchKeepAliveStats().then(setKeepAliveStats).catch(() => null);
+      }
+    };
+
+    // Immediate initial ping on mount
+    runPing();
+
+    // 9.5 minutes (570,000 ms) interval to comfortably beat Render's 15-minute inactivity spin-down
+    timer = setInterval(runPing, 570000);
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, []);
 
   // Compute worst state across zones
   const computeWorstState = (): { state: CrowdState; zoneName: string } => {
@@ -212,6 +249,8 @@ export const App: React.FC = () => {
         isStale={isStale}
         simulatorRunning={simulatorRunning}
         onToggleSimulator={handleToggleSimulator}
+        keepAliveStats={keepAliveStats}
+        onTriggerPing={handleTriggerPing}
       />
 
       {/* 2. Main Content Body with Desktop Left Navigation and Mobile Top Flow */}

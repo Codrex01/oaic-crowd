@@ -67,3 +67,16 @@ export interface HardwareActuatorState {
   };
 }
 
+export interface KeepAliveStats {
+  enabled: boolean;
+  targetUrl: string | null;
+  intervalMinutes: number;
+  totalPings: number;
+  successfulPings: number;
+  failedPings: number;
+  lastPingAt: string | null;
+  lastPingStatus: string;
+  lastLatencyMs: number;
+}
+
+

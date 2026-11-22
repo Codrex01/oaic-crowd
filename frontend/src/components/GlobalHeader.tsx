@@ -1,6 +1,6 @@
 import React from 'react';
-import { Wifi, WifiOff, Play, Pause } from 'lucide-react';
-import { CrowdState } from '../types';
+import { Wifi, WifiOff, Play, Pause, Zap } from 'lucide-react';
+import { CrowdState, KeepAliveStats } from '../types';
 import { StateBadge } from './StateBadge';
 
 interface GlobalHeaderProps {
@@ -10,6 +10,8 @@ interface GlobalHeaderProps {
   isStale: boolean;
   simulatorRunning: boolean;
   onToggleSimulator: () => void;
+  keepAliveStats?: KeepAliveStats | null;
+  onTriggerPing?: () => void;
 }
 
 export const GlobalHeader: React.FC<GlobalHeaderProps> = ({
@@ -18,7 +20,9 @@ export const GlobalHeader: React.FC<GlobalHeaderProps> = ({
   isWsConnected,
   isStale,
   simulatorRunning,
-  onToggleSimulator
+  onToggleSimulator,
+  keepAliveStats,
+  onTriggerPing
 }) => {
   return (
     <header className="border-b border-border-subtle bg-surface-raised sticky top-0 z-30">
@@ -104,6 +108,28 @@ export const GlobalHeader: React.FC<GlobalHeaderProps> = ({
               </>
             )}
           </div>
+
+          {/* Render Anti-Sleep Keep-Alive Heartbeat (10m loop) */}
+          <button
+            onClick={onTriggerPing}
+            type="button"
+            title={
+              keepAliveStats
+                ? `Render Anti-Sleep Auto Ping: Active (${keepAliveStats.intervalMinutes}m interval)\nTarget: ${keepAliveStats.targetUrl || 'Auto'}\nTotal Pings: ${keepAliveStats.totalPings} (${keepAliveStats.lastPingStatus})\nLast Ping: ${keepAliveStats.lastPingAt ? new Date(keepAliveStats.lastPingAt).toLocaleTimeString() : 'Just now'}\nClick to force ping now!`
+                : 'Render Anti-Sleep Keep-Alive: Active (10m loop prevents cold sleep). Click to test ping.'
+            }
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono border bg-surface-sunken hover:bg-surface-raised border-border-subtle hover:border-cyan-500/60 text-text-secondary hover:text-cyan-300 transition-colors focus-visible:outline"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="hidden lg:inline text-text-muted">Anti-Sleep:</span>
+            <span className="text-cyan-400 font-bold">10m Ping</span>
+            {keepAliveStats && keepAliveStats.lastLatencyMs > 0 && (
+              <span className="text-[10px] text-text-muted hidden xl:inline">({keepAliveStats.lastLatencyMs}ms)</span>
+            )}
+          </button>
         </div>
       </div>
     </header>
