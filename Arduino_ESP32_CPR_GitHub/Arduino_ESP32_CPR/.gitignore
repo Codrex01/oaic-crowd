@@ -1,0 +1,13 @@
+# Local credentials / configuration
+secrets.h
+wifi_credentials.h
+.env
+
+# Arduino IDE
+*.elf
+*.bin
+*.hex
+*.map
+*.o
+*.d
+build/
