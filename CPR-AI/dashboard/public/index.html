@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CPR — Crowd Pressure Radar | Live Operational Monitor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700;800;900&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #050a14;
+      color: #f8fafc;
+    }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(51, 65, 85, 0.55);
+    }
+    .glow-green { box-shadow: 0 0 35px rgba(34, 197, 94, 0.22); }
+    .glow-yellow { box-shadow: 0 0 35px rgba(234, 179, 8, 0.25); }
+    .glow-red { box-shadow: 0 0 45px rgba(239, 68, 68, 0.35); }
+    .traffic-glow-green { box-shadow: 0 0 20px #22c55e, inset 0 0 10px #4ade80; }
+    .traffic-glow-yellow { box-shadow: 0 0 20px #eab308, inset 0 0 10px #facc15; }
+    .traffic-glow-red { box-shadow: 0 0 25px #ef4444, inset 0 0 12px #f87171; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col p-4 md:p-7 select-none">
+
+  <!-- Navigation & Status Header -->
+  <header class="flex flex-col md:flex-row items-start md:items-center justify-between pb-5 border-b border-slate-800/80 gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center font-black text-white text-2xl shadow-lg shadow-cyan-500/25">
+        R
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-xl md:text-2xl font-black tracking-tight">CROWD PRESSURE RADAR</h1>
+          <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/70 font-semibold mono">EXHIBITION SYSTEM</span>
+        </div>
+        <p class="text-xs text-slate-400">Hybrid Edge AI (YOLO11n + ByteTrack) + ESP32 Dual-Breadboard IoT Node</p>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs & Mode Indicator -->
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Active Operational Mode Badge -->
+      <div id="modePill" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border mono text-xs font-bold bg-cyan-950/40 text-cyan-400 border-cyan-800/60">
+        <span id="modeDot" class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+        <span id="modeText">PRIMARY: AI VISION (YOLO)</span>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-xs font-semibold mono">
+        <a href="/" class="px-3.5 py-1.5 rounded-lg bg-cyan-500 text-slate-950 font-bold shadow-sm transition-all">
+          LIVE MONITOR
+        </a>
+        <a href="/demo" class="px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
+          <span>HARDWARE DEMO</span>
+          <span class="px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-400 border border-indigo-800 text-[10px]">SANDBOX</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Failover Notice Banner (Hidden by default, shown when camera fails) -->
+  <div id="failoverBanner" class="hidden mt-4 p-3.5 rounded-xl bg-amber-950/60 border border-amber-600/60 text-amber-200 flex items-center justify-between mono text-xs">
+    <div class="flex items-center gap-2.5">
+      <span class="text-lg">⚠️</span>
+      <div>
+        <span class="font-bold">AUTONOMOUS FAILOVER ACTIVE:</span>
+        <span class="text-amber-300">Camera vision offline. Real-time control automatically transitioned to ESP32 24GHz Radar & ToF distance sensors!</span>
+      </div>
+    </div>
+    <span class="px-2 py-1 rounded bg-amber-900/80 font-bold text-amber-100 text-[10px]">ZERO DOWNTIME</span>
+  </div>
+
+  <!-- Primary Dashboard Grid -->
+  <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6 flex-1">
+
+    <!-- Left Column: Giant Safety Beacon & Status (5 cols) -->
+    <div class="lg:col-span-5 flex flex-col gap-6">
+      
+      <!-- Center Crowd Safety Card -->
+      <div id="beaconCard" class="glass-card rounded-3xl p-7 flex flex-col items-center justify-center text-center relative overflow-hidden transition-all duration-300 glow-green flex-1">
+        <span class="text-xs font-bold uppercase tracking-widest text-slate-400 mono">Operational Safety Status</span>
+        
+        <div id="beaconText" class="text-5xl md:text-6xl font-black tracking-tight text-emerald-400 my-4">
+          GREEN
+        </div>
+        
+        <p id="beaconDesc" class="text-sm text-slate-300 max-w-sm leading-relaxed">
+          Fluid pedestrian flow. Crowd density and movement velocity well within corridor safety margins.
+        </p>
+
+        <!-- Dynamic Pressure Bar -->
+        <div class="w-full mt-7 bg-slate-900 rounded-full h-4 overflow-hidden p-0.5 border border-slate-700/80">
+          <div id="pressureBar" class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-300" style="width: 15%;"></div>
+        </div>
+        
+        <div class="flex justify-between w-full text-xs mono text-slate-400 mt-2.5">
+          <span>PRESSURE RATIO:</span>
+          <span id="pressureValue" class="font-bold text-white">0.15 / 1.00</span>
+        </div>
+      </div>
+
+      <!-- Traffic Light & Servo Actuator Hardware Dock -->
+      <div class="glass-card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-3 text-xs mono font-bold text-slate-300">
+          <span>PHYSICAL ESP32 ACTUATOR TWIN</span>
+          <span class="text-cyan-400 text-[11px]">BREADBOARD 1</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 items-center">
+          <!-- 3-Light Traffic Signal Widget -->
+          <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-around">
+            <!-- RED LED -->
+            <div class="flex flex-col items-center gap-1">
+              <div id="ledRed" class="w-7 h-7 rounded-full bg-red-950 border border-red-800/80 transition-all duration-200"></div>
+              <span class="text-[10px] text-slate-400 mono font-semibold">&gt;=10</span>
+            </div>
+            <!-- YELLOW LED -->
+            <div class="flex flex-col items-center gap-1">
+              <div id="ledYellow" class="w-7 h-7 rounded-full bg-yellow-950 border border-yellow-800/80 transition-all duration-200"></div>
+              <span class="text-[10px] text-slate-400 mono font-semibold">5-9</span>
+            </div>
+            <!-- GREEN LED -->
+            <div class="flex flex-col items-center gap-1">
+              <div id="ledGreen" class="w-7 h-7 rounded-full bg-green-500 traffic-glow-green border border-green-400 transition-all duration-200"></div>
+              <span class="text-[10px] text-slate-400 mono font-semibold">&lt;5</span>
+            </div>
+          </div>
+
+          <!-- SG90 Gate Status -->
+          <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 flex flex-col justify-between h-full">
+            <span class="text-[11px] text-slate-400 mono font-bold">SG90 SERVO GATE</span>
+            <div id="servoBadge" class="text-base font-extrabold text-emerald-400 mono">OPEN (90°)</div>
+            <span id="buzzerBadge" class="text-[10px] text-slate-500 mono">BUZZER: SILENT</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Quantitative Numbers, Flow & Physical OLED Twin (7 cols) -->
+    <div class="lg:col-span-7 flex flex-col gap-6">
+
+      <!-- 3 Key Metric Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!-- Live Count -->
+        <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
+          <span class="text-xs text-slate-400 mono font-semibold">ACTIVE OCCUPANCY</span>
+          <div id="targetCount" class="text-4xl font-black text-white mono my-2">2</div>
+          <span class="text-[11px] text-slate-500">Tracked in camera zone</span>
+        </div>
+
+        <!-- Inflow -->
+        <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-slate-400 mono font-semibold">
+            <span>TOTAL INFLOW</span>
+            <span class="text-emerald-400">IN [v]</span>
+          </div>
+          <div id="entryCount" class="text-4xl font-black text-emerald-400 mono my-2">14</div>
+          <span class="text-[11px] text-slate-500">Virtual line crossings</span>
+        </div>
+
+        <!-- Outflow -->
+        <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-slate-400 mono font-semibold">
+            <span>TOTAL OUTFLOW</span>
+            <span class="text-cyan-400">OUT [^]</span>
+          </div>
+          <div id="exitCount" class="text-4xl font-black text-cyan-400 mono my-2">11</div>
+          <span class="text-[11px] text-slate-500">Virtual line exits</span>
+        </div>
+      </div>
+
+      <!-- Flow Velocity & Sensor Fusion Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Flow Metrics -->
+        <div class="glass-card rounded-2xl p-5">
+          <span class="text-xs text-slate-400 mono font-semibold block mb-3">DYNAMIC FLOW ANALYTICS</span>
+          <div class="flex justify-between items-center py-2 border-b border-slate-800 text-xs mono">
+            <span class="text-slate-400">AVERAGE VELOCITY:</span>
+            <span id="avgSpeed" class="font-bold text-cyan-400">48.5 px/sec</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-slate-800 text-xs mono">
+            <span class="text-slate-400">STOP-AND-GO TURBULENCE:</span>
+            <span id="stopGoIndex" class="font-bold text-amber-400">0.00 (SMOOTH)</span>
+          </div>
+          <div class="flex justify-between items-center pt-2 text-xs mono">
+            <span class="text-slate-400">CAMERA STREAM:</span>
+            <span class="font-bold text-emerald-400">640x480 @ 30 FPS</span>
+          </div>
+        </div>
+
+        <!-- Physical ESP32 OLED Display Twin -->
+        <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs mono font-semibold mb-2">
+            <span class="text-slate-400">ESP32 0.96" OLED TWIN</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800">I2C 0x3C</span>
+          </div>
+          <!-- OLED Mockup Screen -->
+          <div class="bg-black border-2 border-slate-700 rounded-lg p-3 mono text-cyan-400 text-xs shadow-inner flex flex-col justify-around h-28 tracking-wider">
+            <div id="oled1" class="font-bold text-amber-400">CPR RADAR: LIVE</div>
+            <div id="oled2" class="font-extrabold text-white text-sm">COUNT: 2 PPL</div>
+            <div id="oled3" class="text-emerald-400">STATUS: NORMAL</div>
+            <div id="oled4" class="text-slate-400 text-[11px]">GATE: OPEN (90D)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Incident & Event Feed -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col flex-1">
+        <div class="flex items-center justify-between text-xs mono font-bold text-slate-300 mb-3">
+          <span>EVENT AUDIT & SYSTEM LOGS</span>
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        </div>
+        <div id="eventStream" class="flex flex-col gap-2 overflow-y-auto max-h-36 pr-1 mono text-xs">
+          <div class="p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
+            [INIT] CPR Telemetry Hub synchronized. Ready for YOLO & ESP32 telemetry.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Client-Side Synchronization Script -->
+  <script>
+    const evtSource = new EventSource('/api/stream');
+
+    evtSource.onmessage = function(event) {
+      try {
+        const payload = JSON.parse(event.data);
+        if (payload.state) {
+          renderDashboard(payload.state);
+        }
+      } catch (err) {
+        console.error('SSE Error:', err);
+      }
+    };
+
+    function renderDashboard(s) {
+      const v = s.vision;
+      const hw = s.hardware;
+      const isFailover = s.systemMode === 'HARDWARE_FAILOVER';
+
+      // 1. Failover Banner & Mode Pill
+      const banner = document.getElementById('failoverBanner');
+      const modePill = document.getElementById('modePill');
+      const modeDot = document.getElementById('modeDot');
+      const modeText = document.getElementById('modeText');
+
+      if (isFailover) {
+        banner.classList.remove('hidden');
+        modePill.className = 'flex items-center gap-2 px-3.5 py-1.5 rounded-xl border mono text-xs font-bold bg-amber-950/70 text-amber-300 border-amber-700/80';
+        modeDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping';
+        modeText.textContent = 'FAILOVER: HARDWARE RADAR';
+      } else {
+        banner.classList.add('hidden');
+        modePill.className = 'flex items-center gap-2 px-3.5 py-1.5 rounded-xl border mono text-xs font-bold bg-cyan-950/40 text-cyan-400 border-cyan-800/60';
+        modeDot.className = 'w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse';
+        modeText.textContent = 'PRIMARY: AI VISION (YOLO)';
+      }
+
+      // 2. Safety Beacon Card
+      const card = document.getElementById('beaconCard');
+      const text = document.getElementById('beaconText');
+      const desc = document.getElementById('beaconDesc');
+      const bar = document.getElementById('pressureBar');
+      const val = document.getElementById('pressureValue');
+
+      card.classList.remove('glow-green', 'glow-yellow', 'glow-red');
+      bar.classList.remove('from-emerald-500', 'from-yellow-500', 'from-red-600', 'to-green-400', 'to-amber-400', 'to-rose-500');
+
+      text.textContent = v.state;
+      val.textContent = `${(v.score || 0).toFixed(2)} / 1.00`;
+      bar.style.width = `${Math.min(100, Math.max(5, (v.score || 0) * 100))}%`;
+
+      if (v.state === 'RED') {
+        text.className = 'text-5xl md:text-6xl font-black tracking-tight text-red-500 my-4 animate-pulse';
+        desc.textContent = 'CRITICAL CROWD CONGESTION! Inflow gate restricted by SG90 actuator to prevent crowd crush.';
+        card.classList.add('glow-red');
+        bar.classList.add('from-red-600', 'to-rose-500');
+      } else if (v.state === 'AMBER') {
+        text.className = 'text-5xl md:text-6xl font-black tracking-tight text-yellow-400 my-4';
+        desc.textContent = 'Elevated crowd density detected. Pedestrian velocity slowing; entrance metering advised.';
+        card.classList.add('glow-yellow');
+        bar.classList.add('from-yellow-500', 'to-amber-400');
+      } else {
+        text.className = 'text-5xl md:text-6xl font-black tracking-tight text-emerald-400 my-4';
+        desc.textContent = 'Fluid pedestrian flow. Crowd density and movement velocity well within corridor safety margins.';
+        card.classList.add('glow-green');
+        bar.classList.add('from-emerald-500', 'to-green-400');
+      }
+
+      // 3. Traffic Lights
+      const red = document.getElementById('ledRed');
+      const yel = document.getElementById('ledYellow');
+      const grn = document.getElementById('ledGreen');
+
+      red.className = hw.ledState.red 
+        ? 'w-7 h-7 rounded-full bg-red-500 traffic-glow-red border border-red-300' 
+        : 'w-7 h-7 rounded-full bg-red-950/70 border border-red-900';
+      yel.className = hw.ledState.yellow 
+        ? 'w-7 h-7 rounded-full bg-yellow-400 traffic-glow-yellow border border-yellow-200' 
+        : 'w-7 h-7 rounded-full bg-yellow-950/70 border border-yellow-900';
+      grn.className = hw.ledState.green 
+        ? 'w-7 h-7 rounded-full bg-green-500 traffic-glow-green border border-green-300' 
+        : 'w-7 h-7 rounded-full bg-green-950/70 border border-green-900';
+
+      // 4. Actuator & Numbers
+      document.getElementById('servoBadge').textContent = `${hw.servoStatus} (${hw.servoAngle}°)`;
+      document.getElementById('servoBadge').className = hw.servoAngle === 0 
+        ? 'text-base font-extrabold text-red-400 mono' 
+        : (hw.servoAngle === 45 ? 'text-base font-extrabold text-yellow-400 mono' : 'text-base font-extrabold text-emerald-400 mono');
+
+      document.getElementById('buzzerBadge').textContent = hw.buzzerActive ? 'BUZZER: SOUNDING (ALARM)' : 'BUZZER: SILENT';
+      document.getElementById('buzzerBadge').className = hw.buzzerActive ? 'text-[10px] text-red-400 mono font-bold animate-pulse' : 'text-[10px] text-slate-500 mono';
+
+      document.getElementById('targetCount').textContent = v.targetCount;
+      document.getElementById('entryCount').textContent = v.entryCount;
+      document.getElementById('exitCount').textContent = v.exitCount;
+      document.getElementById('avgSpeed').textContent = `${(v.avgSpeed || 0).toFixed(1)} px/sec`;
+      document.getElementById('stopGoIndex').textContent = `${(v.stopGoIndex || 0).toFixed(2)} (${v.stopGoIndex > 0.4 ? 'TURBULENT' : 'SMOOTH'})`;
+
+      // 5. OLED Screen Content
+      if (hw.oledScreen) {
+        document.getElementById('oled1').textContent = hw.oledScreen.line1 || '';
+        document.getElementById('oled2').textContent = hw.oledScreen.line2 || '';
+        document.getElementById('oled3').textContent = hw.oledScreen.line3 || '';
+        document.getElementById('oled4').textContent = hw.oledScreen.line4 || '';
+      }
+
+      // 6. Event Logs
+      if (s.eventLogs && s.eventLogs.length > 0) {
+        document.getElementById('eventStream').innerHTML = s.eventLogs.map(l => `
+          <div class="p-2 rounded-lg ${l.type === 'ALERT' ? 'bg-red-950/70 border border-red-700/80 text-red-200' : 'bg-slate-900/80 border border-slate-800 text-slate-300'}">
+            <span class="text-[10px] text-slate-400 block">${l.timestamp} [${l.type}]</span>
+            <p class="text-xs mt-0.5">${l.msg}</p>
+          </div>
+        `).join('');
+      }
+    }
+  </script>
+</body>
+</html>

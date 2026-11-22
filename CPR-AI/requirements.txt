@@ -1,0 +1,14 @@
+# Core Deep Learning & Computer Vision
+ultralytics>=8.3.0
+opencv-python>=4.10.0
+numpy>=1.26.0
+
+# PyTorch with CUDA 12.4 (Install via PyTorch wheel index):
+# pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+torch>=2.4.0
+torchvision>=0.19.0
+
+# HTTP & Background Telemetry Integration
+requests>=2.31.0
+python-dotenv>=1.0.0
+pydantic>=2.7.0

@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CPR — Hardware Architecture & Interactive Component Twin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700;800;900&family=Caveat:wght@600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #040812;
+      color: #f8fafc;
+    }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .handwriting { font-family: 'Caveat', cursive; }
+    .glass-card {
+      background: rgba(13, 20, 36, 0.78);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(51, 65, 85, 0.55);
+    }
+    .traffic-glow-green { box-shadow: 0 0 25px #22c55e, inset 0 0 10px #4ade80; }
+    .traffic-glow-yellow { box-shadow: 0 0 25px #eab308, inset 0 0 10px #facc15; }
+    .traffic-glow-red { box-shadow: 0 0 30px #ef4444, inset 0 0 12px #f87171; }
+    .schematic-board {
+      background: radial-gradient(circle at 50% 50%, #080e1e 0%, #03060d 100%);
+      border: 2px solid #334155;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), inset 0 0 60px rgba(15, 23, 42, 0.6);
+    }
+    .component-interactive {
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .component-interactive:hover {
+      transform: translateY(-2px) scale(1.02);
+      filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.75));
+    }
+    .radar-wave {
+      animation: radarPulse 2s infinite linear;
+      transform-origin: center;
+    }
+    @keyframes radarPulse {
+      0% { r: 10px; opacity: 0.9; }
+      100% { r: 60px; opacity: 0; }
+    }
+    .servo-arm {
+      transform-origin: 20px 20px;
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .laser-beam {
+      animation: laserGlow 1.4s infinite alternate ease-in-out;
+    }
+    @keyframes laserGlow {
+      from { stroke-opacity: 0.45; stroke-width: 1.5; }
+      to { stroke-opacity: 1; stroke-width: 2.5; filter: drop-shadow(0 0 8px #f97316); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col p-4 md:p-6 select-none">
+
+  <!-- Header & Navigation -->
+  <header class="flex flex-col md:flex-row items-start md:items-center justify-between pb-4 border-b border-slate-800 gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center font-black text-white text-2xl shadow-lg shadow-cyan-500/25">
+        R
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-xl md:text-2xl font-black tracking-tight">CROWD PRESSURE RADAR</h1>
+          <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-indigo-950/80 text-indigo-400 border border-indigo-800 font-semibold mono">DIGITAL TWIN SANDBOX</span>
+        </div>
+        <p class="text-xs text-slate-400">Interactive Hardware Schematic • Dual ESP32 + 24GHz Radar + ToF + LoRa</p>
+      </div>
+    </div>
+
+    <!-- Mode Badge & Navigation Tabs -->
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Active Mode Pill -->
+      <div id="modePill" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border mono text-xs font-bold bg-cyan-950/40 text-cyan-400 border-cyan-800/60">
+        <span id="modeDot" class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+        <span id="modeText">PRIMARY: AI VISION (YOLO)</span>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-xs font-semibold mono">
+        <a href="/" class="px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all">
+          LIVE MONITOR
+        </a>
+        <a href="/demo" class="px-3.5 py-1.5 rounded-lg bg-cyan-500 text-slate-950 font-bold shadow-sm transition-all">
+          HARDWARE DEMO
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Interactive Control Sandbox Toolbar -->
+  <section class="mt-4 p-4 rounded-2xl glass-card border border-slate-700/80 flex flex-col lg:flex-row items-center justify-between gap-4">
+    <!-- Slider Crowd Control -->
+    <div class="flex-1 w-full flex flex-col md:flex-row items-center gap-4">
+      <div class="flex items-center gap-2 min-w-[210px]">
+        <span class="text-xs mono font-bold text-slate-300 uppercase tracking-wider">Simulated Crowd:</span>
+        <span id="sliderValBadge" class="px-3 py-1 rounded-lg bg-cyan-950 text-cyan-300 border border-cyan-700 font-extrabold text-sm mono">
+          2 Persons
+        </span>
+      </div>
+      <div class="flex-1 w-full flex items-center gap-3">
+        <span class="text-xs mono text-slate-400">0</span>
+        <input id="crowdSlider" type="range" min="0" max="25" value="2" 
+          class="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400 focus:outline-none">
+        <span class="text-xs mono text-slate-400">25+</span>
+      </div>
+    </div>
+
+    <!-- Quick Scenario Presets -->
+    <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
+      <span class="text-[11px] mono text-slate-400 font-semibold mr-1">SCENARIOS:</span>
+      <button onclick="setScenario(2)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 text-xs mono font-bold transition">
+        Normal (2)
+      </button>
+      <button onclick="setScenario(7)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-yellow-400 text-xs mono font-bold transition">
+        Elevated (7)
+      </button>
+      <button onclick="setScenario(15)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-red-400 text-xs mono font-bold transition">
+        Surge Alert (15)
+      </button>
+      <!-- Failover Toggle Button -->
+      <button id="toggleFailoverBtn" onclick="toggleFailover()" class="px-3 py-1.5 rounded-lg bg-amber-950/80 hover:bg-amber-900 border border-amber-600/70 text-amber-200 text-xs mono font-bold flex items-center gap-1.5 transition">
+        <span>⚡</span>
+        <span id="failoverBtnText">Simulate Camera Failure</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Interactive Digital Twin Schematic Diagram (Faithful to Breadboard Architecture) -->
+  <main class="mt-4 flex-1 flex flex-col xl:flex-row gap-5">
+    
+    <!-- Left Area: Schematic Canvas (Exact match of media_1795332494130_47ea2698.jpg) -->
+    <div class="flex-1 schematic-board rounded-3xl p-4 md:p-6 relative flex flex-col justify-between overflow-hidden min-h-[580px]">
+      
+      <!-- Top Component Row: Webcam, Traffic Light, ToF Sensor, 24GHz Radar -->
+      <div class="relative z-10 w-full flex items-center justify-between px-3 md:px-8 pt-2">
+        
+        <!-- Left spacer to balance Breadboard 2 -->
+        <div class="w-36 hidden md:block"></div>
+
+        <!-- Center Top Cluster: Webcam + 3-LED Traffic Light + TOF200C + LD2410 Radar -->
+        <div class="flex flex-wrap items-center justify-center gap-4 md:gap-7 bg-slate-950/90 p-3 rounded-2xl border border-slate-800 shadow-2xl">
+          
+          <!-- Component 1: Webcam -->
+          <div onclick="openInspector('webcam')" class="component-interactive flex flex-col items-center gap-1 group" title="Click to inspect USB Webcam">
+            <div class="relative w-12 h-10 rounded-xl bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg group-hover:border-cyan-400">
+              <span class="text-xl">📷</span>
+              <span id="camIndicatorDot" class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 animate-pulse border-2 border-slate-900"></span>
+            </div>
+            <span class="text-[10px] mono font-bold text-slate-300 group-hover:text-cyan-400">WEBCAM AI</span>
+          </div>
+
+          <!-- Component 2: 3-LED Traffic Light Module -->
+          <div onclick="openInspector('traffic_leds')" class="component-interactive flex flex-col items-center gap-1 group" title="Click to inspect Traffic Light LEDs">
+            <div class="h-10 px-3.5 rounded-full bg-slate-900 border-2 border-cyan-700/80 flex items-center gap-3 shadow-xl group-hover:border-cyan-400">
+              <div id="ledRed" class="w-5 h-5 rounded-full bg-red-950 border border-red-800 transition-all duration-300"></div>
+              <div id="ledYellow" class="w-5 h-5 rounded-full bg-yellow-950 border border-yellow-800 transition-all duration-300"></div>
+              <div id="ledGreen" class="w-5 h-5 rounded-full bg-green-500 traffic-glow-green border border-green-300 transition-all duration-300"></div>
+            </div>
+            <span class="text-[10px] mono font-bold text-slate-300 group-hover:text-cyan-400">TRAFFIC LIGHT</span>
+          </div>
+
+          <!-- Component 3: TOF200C / VL53L0X ToF Distance Sensor -->
+          <div onclick="openInspector('tof_sensor')" class="component-interactive flex flex-col items-center gap-1 group" title="Click to inspect VL53L0X Time-of-Flight Sensor">
+            <div class="w-12 h-10 rounded-xl bg-slate-900 border-2 border-amber-600/70 flex items-center justify-center shadow-lg group-hover:border-amber-400">
+              <span class="text-base font-bold text-amber-400 mono">ToF</span>
+            </div>
+            <span class="text-[10px] mono font-bold text-slate-300 group-hover:text-amber-400">TOF200C</span>
+          </div>
+
+          <!-- Component 4: HLK-LD2410 24GHz Radar Module -->
+          <div onclick="openInspector('ld2410_radar')" class="component-interactive flex flex-col items-center gap-1 group" title="Click to inspect HLK-LD2410 24GHz Microwave Radar">
+            <div class="w-12 h-10 rounded-xl bg-blue-950 border-2 border-blue-500 flex items-center justify-center shadow-lg group-hover:border-blue-400 relative overflow-hidden">
+              <span class="text-xs font-black text-cyan-300 mono">24GHz</span>
+              <span id="radarWave" class="absolute w-2 h-2 rounded-full bg-blue-400 opacity-60 animate-ping"></span>
+            </div>
+            <span class="text-[10px] mono font-bold text-slate-300 group-hover:text-blue-400">LD2410 RADAR</span>
+          </div>
+
+        </div>
+
+        <!-- Right spacer to balance Breadboard 1 -->
+        <div class="w-36 hidden md:block"></div>
+      </div>
+
+      <!-- Center Multi-Corridor Flow Area -->
+      <div class="relative z-0 flex-1 my-3 grid grid-cols-12 gap-2 md:gap-4 items-stretch">
+        
+        <!-- Left Column: Breadboard 2 (Perimeter Node) -->
+        <div onclick="openInspector('breadboard_2')" class="col-span-3 lg:col-span-2 rounded-2xl border-2 border-rose-500/60 bg-rose-950/20 p-2.5 flex flex-col justify-between component-interactive group" title="Click to inspect Breadboard 2">
+          <div class="flex items-center justify-between border-b border-rose-900/60 pb-1">
+            <span class="handwriting text-rose-300 text-sm md:text-base font-bold">breadboard 2</span>
+            <span class="text-[9px] px-1 rounded bg-rose-950 text-rose-300 mono">SLAVE</span>
+          </div>
+
+          <!-- Ra-02 LoRa Module -->
+          <div onclick="event.stopPropagation(); openInspector('lora_slave');" class="bg-blue-950/80 border border-blue-500/70 rounded-xl p-2 text-center component-interactive hover:border-cyan-400 shadow-md">
+            <div class="flex items-center justify-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+              <span class="text-[11px] mono font-bold text-cyan-300">Ra-02 LoRa</span>
+            </div>
+            <span class="text-[9px] mono text-slate-400 block mt-0.5">433MHz Slave</span>
+          </div>
+
+          <!-- Jumper Wires Graphic -->
+          <div class="py-1 text-center opacity-40 text-amber-500 text-xs font-bold mono">
+            ≀ ≀ ≀ ≀ SPI Link
+          </div>
+
+          <!-- ESP32 Dev Board -->
+          <div onclick="event.stopPropagation(); openInspector('esp32_slave');" class="bg-slate-950 border border-slate-700 rounded-xl p-2 text-center component-interactive hover:border-emerald-400 shadow-md">
+            <div class="flex items-center justify-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span class="text-[11px] mono font-black text-white">ESP32 Node</span>
+            </div>
+            <span class="text-[9px] mono text-slate-400 block mt-0.5">IR & LoRa Driver</span>
+          </div>
+
+          <div class="text-[9px] mono text-center text-slate-500 mt-1">[CLICK TO INSPECT]</div>
+        </div>
+
+        <!-- Center Corridors: Left (OPEN) vs Right (CLOSE / CONGESTED) -->
+        <div class="col-span-6 lg:col-span-8 rounded-2xl border border-slate-800 bg-black/50 relative overflow-hidden flex flex-col justify-between p-3">
+          
+          <!-- Top Corridor Labels -->
+          <div class="grid grid-cols-2 text-center border-b border-slate-800/80 pb-2">
+            <div>
+              <span class="handwriting text-2xl md:text-3xl font-extrabold text-fuchsia-400 tracking-wider">OPEN</span>
+              <span class="block text-[10px] mono text-slate-400">Fluid Inflow Corridor</span>
+            </div>
+            <div class="border-l border-emerald-500/70">
+              <span class="handwriting text-2xl md:text-3xl font-extrabold text-purple-400 tracking-wider">CLOSE</span>
+              <span class="block text-[10px] mono text-slate-400">Safety Restricted Corridor</span>
+            </div>
+          </div>
+
+          <!-- Corridor Dynamic Crowd Area -->
+          <div class="grid grid-cols-2 flex-1 relative py-4 items-center">
+            
+            <!-- Left Corridor: Moderate, Free-Moving Silhouettes -->
+            <div id="openCorridorCrowd" class="flex flex-wrap gap-3 items-center justify-center px-4">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Center Green Divider Line -->
+            <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-emerald-500 shadow-[0_0_12px_#10b981]"></div>
+
+            <!-- Right Corridor: Congested Crowd -->
+            <div id="closeCorridorCrowd" class="flex flex-wrap gap-2 items-center justify-center px-4">
+              <!-- Rendered via JS -->
+            </div>
+
+          </div>
+
+          <!-- Center Gate Actuator & IR Beam Line Boundary -->
+          <div class="relative pt-4 pb-2 border-t border-slate-800 flex items-center justify-between">
+            
+            <!-- IR Beam Transmitter (Left) -->
+            <div onclick="openInspector('ir_beam')" class="component-interactive flex items-center gap-1.5" title="Click to inspect IR Beam Transmitter">
+              <div class="w-6 h-8 rounded-full bg-slate-900 border-2 border-amber-500/80 flex items-center justify-center shadow-lg">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              </div>
+              <span class="text-[9px] mono text-amber-400 font-bold hidden sm:inline">IR TX</span>
+            </div>
+
+            <!-- Center SG90 Diamond Pivot & Physical Servo Gate Arm -->
+            <div onclick="openInspector('servo_gate')" class="component-interactive flex flex-col items-center gap-1 group relative -top-3" title="Click to inspect SG90 Servo Gate">
+              <!-- Diamond Pivot Box -->
+              <div class="relative w-10 h-10 bg-slate-900 border-2 border-emerald-400 rotate-45 flex items-center justify-center shadow-xl group-hover:border-cyan-300">
+                <div class="w-3 h-3 bg-emerald-400 rounded-full -rotate-45"></div>
+              </div>
+              
+              <!-- Physical Gate Arm (SVG Overlay rotating dynamically) -->
+              <div class="absolute top-5 left-1/2 w-40 h-2 pointer-events-none">
+                <div id="physicalGateArm" class="h-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 shadow-[0_0_12px_#d946ef] origin-left transition-transform duration-500" style="width: 140px; transform: rotate(0deg);"></div>
+              </div>
+
+              <span class="text-[10px] mono font-bold text-emerald-400 mt-2 bg-slate-950 px-2 py-0.5 rounded border border-emerald-800">
+                SG90 SERVO GATE
+              </span>
+            </div>
+
+            <!-- IR Beam Line (Glowing Tripwire across corridor) -->
+            <div class="absolute left-8 right-8 bottom-5 h-0.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 laser-beam pointer-events-none"></div>
+
+            <!-- IR Beam Receiver (Right) -->
+            <div onclick="openInspector('ir_beam')" class="component-interactive flex items-center gap-1.5" title="Click to inspect IR Beam Receiver">
+              <span class="text-[9px] mono text-amber-400 font-bold hidden sm:inline">IR RX</span>
+              <div class="w-6 h-8 rounded-full bg-slate-900 border-2 border-amber-500/80 flex items-center justify-center shadow-lg">
+                <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Corridor Border Tag -->
+          <div class="flex justify-between items-center text-[10px] mono text-slate-500 px-2 pt-1">
+            <span>PERIMETER INGRESS TRIPWIRE</span>
+            <span id="gateAngleDisplay" class="text-emerald-400 font-bold">ARM: OPEN (90°)</span>
+            <span>EGRESS FLOW</span>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Breadboard 1 (Master Controller Node) -->
+        <div onclick="openInspector('breadboard_1')" class="col-span-3 lg:col-span-2 rounded-2xl border-2 border-pink-500/60 bg-pink-950/20 p-2.5 flex flex-col justify-between component-interactive group" title="Click to inspect Breadboard 1">
+          <div class="flex items-center justify-between border-b border-pink-900/60 pb-1">
+            <span class="handwriting text-pink-300 text-sm md:text-base font-bold">breadboard 1</span>
+            <span class="text-[9px] px-1 rounded bg-pink-950 text-pink-300 mono">MASTER</span>
+          </div>
+
+          <!-- Ra-02 LoRa Master Module -->
+          <div onclick="event.stopPropagation(); openInspector('lora_master');" class="bg-blue-950/80 border border-blue-500/70 rounded-xl p-2 text-center component-interactive hover:border-cyan-400 shadow-md">
+            <div class="flex items-center justify-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+              <span class="text-[11px] mono font-bold text-cyan-300">Ra-02 LoRa</span>
+            </div>
+            <span class="text-[9px] mono text-slate-400 block mt-0.5">433MHz Master</span>
+          </div>
+
+          <!-- Jumper Wires Graphic -->
+          <div class="py-1 text-center opacity-40 text-amber-500 text-xs font-bold mono">
+            ≀ ≀ ≀ ≀ I2C / PWM
+          </div>
+
+          <!-- ESP32 Master Dev Board -->
+          <div onclick="event.stopPropagation(); openInspector('esp32_master');" class="bg-slate-950 border border-slate-700 rounded-xl p-2 text-center component-interactive hover:border-emerald-400 shadow-md">
+            <div class="flex items-center justify-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span class="text-[11px] mono font-black text-white">ESP32 Master</span>
+            </div>
+            <span class="text-[9px] mono text-slate-400 block mt-0.5">OLED, LEDs & Servo</span>
+          </div>
+
+          <div class="text-[9px] mono text-center text-slate-500 mt-1">[CLICK TO INSPECT]</div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Hint Bar -->
+      <div class="relative z-10 flex flex-col sm:flex-row items-center justify-between text-xs mono text-slate-400 bg-slate-950/80 px-4 py-2 rounded-xl border border-slate-800 gap-2">
+        <span class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span>Tip: Click on ANY component on this schematic to inspect its pinout, role & failover logic!</span>
+        </span>
+        <span class="text-[11px] text-cyan-400">SCHEMATIC REF: media_1795332494130</span>
+      </div>
+
+    </div>
+
+    <!-- Right Area: Live Component Telemetry & Hardware Inspector Panel (5 Cols on XL) -->
+    <div class="w-full xl:w-96 flex flex-col gap-4">
+      
+      <!-- Live Dynamic OLED Twin -->
+      <div class="glass-card rounded-2xl p-4">
+        <div class="flex items-center justify-between text-xs mono font-bold text-slate-300 mb-2">
+          <span>PHYSICAL OLED TWIN</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800">I2C 0x3C</span>
+        </div>
+        <div class="bg-black border-2 border-slate-700 rounded-xl p-3 mono text-cyan-400 text-xs shadow-inner flex flex-col justify-around h-28 tracking-wider">
+          <div id="oled1" class="font-bold text-amber-400">CPR RADAR: LIVE</div>
+          <div id="oled2" class="font-extrabold text-white text-sm">COUNT: 2 PPL</div>
+          <div id="oled3" class="text-emerald-400">STATUS: NORMAL</div>
+          <div id="oled4" class="text-slate-400 text-[11px]">GATE: OPEN (90D)</div>
+        </div>
+      </div>
+
+      <!-- Component Inspector Card (Dynamically updated on click) -->
+      <div id="inspectorCard" class="glass-card rounded-2xl p-5 flex-1 flex flex-col justify-between border-cyan-800/60 shadow-xl">
+        <div>
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+              <span id="inspectIcon" class="text-2xl">📷</span>
+              <div>
+                <h3 id="inspectTitle" class="text-sm font-bold text-white mono">USB WEBCAM (AI VISION)</h3>
+                <span id="inspectSubtitle" class="text-[11px] text-cyan-400 mono">Primary Edge Vision Sensor</span>
+              </div>
+            </div>
+            <span id="inspectBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-700 font-bold mono">ACTIVE</span>
+          </div>
+
+          <p id="inspectDescription" class="text-xs text-slate-300 mt-3 leading-relaxed">
+            Acquires high-speed 640x480 video feed. Analyzed locally on the RTX 3050 GPU using YOLO11n + ByteTrack to detect and assign unique track IDs to persons.
+          </p>
+
+          <!-- Specifications Table -->
+          <div class="mt-4 space-y-2 text-xs mono">
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">HARDWARE MODEL:</span>
+              <span id="specModel" class="font-bold text-white">USB UVC Camera (30 FPS)</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">INTERFACE PROTOCOL:</span>
+              <span id="specInterface" class="font-bold text-cyan-400">USB 2.0 / DirectShow</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">AI INFERENCE TIME:</span>
+              <span id="specInference" class="font-bold text-emerald-400">~17.2 ms (CUDA GPU)</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">FAILOVER ROLE:</span>
+              <span id="specFailover" class="font-bold text-amber-300">Falls back to 24GHz Radar if dropped</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center text-[11px] mono text-slate-400">
+          <span>PIN ASSIGNMENT:</span>
+          <span id="specPin" class="text-white font-bold">USB Host Controller</span>
+        </div>
+      </div>
+
+      <!-- Quick System Stats Pill List -->
+      <div class="glass-card rounded-2xl p-3.5 grid grid-cols-2 gap-2 text-xs mono">
+        <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800">
+          <span class="text-slate-400 text-[10px] block">RADAR ENERGY</span>
+          <span id="radarEnergyText" class="font-bold text-cyan-400 text-sm">24% (Active)</span>
+        </div>
+        <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800">
+          <span class="text-slate-400 text-[10px] block">ToF DISTANCE</span>
+          <span id="tofDistanceText" class="font-bold text-amber-400 text-sm">1,820 mm</span>
+        </div>
+        <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800">
+          <span class="text-slate-400 text-[10px] block">LoRa RSSI</span>
+          <span class="font-bold text-emerald-400 text-sm">-68 dBm</span>
+        </div>
+        <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800">
+          <span class="text-slate-400 text-[10px] block">GATE POSITION</span>
+          <span id="gatePositionText" class="font-bold text-emerald-400 text-sm">90° (OPEN)</span>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Interactive Logic & Inspection Scripts -->
+  <script>
+    // Component Registry for Click-to-Inspect
+    const COMPONENT_DETAILS = {
+      webcam: {
+        icon: '📷',
+        title: 'USB WEBCAM (AI VISION)',
+        subtitle: 'Primary Optical Sensor Node',
+        badge: 'PRIMARY',
+        badgeClass: 'bg-emerald-950 text-emerald-400 border-emerald-700',
+        desc: 'Captures live video for real-time person detection with Ultralytics YOLO11n and ByteTrack multi-object tracking. Runs on RTX 3050 CUDA GPU at ~17ms per frame.',
+        model: 'UVC HD USB Camera',
+        interface: 'USB 2.0 / DirectShow / OpenCV',
+        inference: '~17.2 ms (CUDA:0 Acceleration)',
+        failover: 'Monitored by 4.5s watchdog. If disconnected, automatically switches to Radar + ToF.',
+        pin: 'Direct Host USB Port'
+      },
+      traffic_leds: {
+        icon: '🚦',
+        title: '3-LIGHT TRAFFIC SIGNAL',
+        subtitle: 'Visual Crowd Warning Actuator',
+        badge: 'ACTUATOR',
+        badgeClass: 'bg-cyan-950 text-cyan-400 border-cyan-700',
+        desc: 'Provides immediate intuitive safety feedback to pedestrians. Controlled automatically: GREEN (<5 people, free movement), YELLOW (5-9 people, caution), RED (10+ people, gate lockdown).',
+        model: '5mm High-Luminosity LED Array',
+        interface: 'Digital GPIO Output (Active HIGH)',
+        inference: 'Zero Latency (< 1 ms)',
+        failover: 'Continues operating in Failover Mode driven by 24GHz radar energy metrics.',
+        pin: 'Red: GPIO 25 | Yellow: GPIO 26 | Green: GPIO 27'
+      },
+      ld2410_radar: {
+        icon: '📡',
+        title: 'HLK-LD2410 24GHz RADAR',
+        subtitle: 'Millimeter-Wave Presence & Energy Sensor',
+        badge: 'MVP SENSOR',
+        badgeClass: 'bg-blue-950 text-blue-400 border-blue-700',
+        desc: 'FMCW 24GHz millimeter-wave radar that detects stationary and moving human bodies up to 6 meters. Penetrates dust, smoke, and complete darkness without optical blinding.',
+        model: 'Hi-Link HLK-LD2410C (24GHz Band)',
+        interface: 'UART Serial (256000 baud) / GPIO',
+        inference: '10 Hz Continuous FMCW Chirp',
+        failover: 'MAIN MVP FALLBACK: Estimates crowd pressure from gate energy levels when camera fails.',
+        pin: 'TX: GPIO 16 (RX2) | RX: GPIO 17 (TX2)'
+      },
+      tof_sensor: {
+        icon: '📏',
+        title: 'TOF200C / VL53L0X ToF SENSOR',
+        subtitle: 'Laser Time-of-Flight Distance Meter',
+        badge: 'PRECISION',
+        badgeClass: 'bg-amber-950 text-amber-400 border-amber-700',
+        desc: 'Emits 940nm VCSEL laser pulses to compute distance with sub-millimeter precision up to 2000mm. Detects bottleneck crowd compression at the gate entryway.',
+        model: 'STMicroelectronics VL53L0X / TOF200C',
+        interface: 'I2C Bus (Address 0x29)',
+        inference: '30ms Range Profile Sample Rate',
+        failover: 'Verifies physical crowd proximity when camera field of view is blocked.',
+        pin: 'SDA: GPIO 21 | SCL: GPIO 22'
+      },
+      servo_gate: {
+        icon: '⚙️',
+        title: 'SG90 MICRO SERVO GATE',
+        subtitle: 'Physical Inflow Metering Actuator',
+        badge: 'CRUSH SHIELD',
+        badgeClass: 'bg-fuchsia-950 text-fuchsia-400 border-fuchsia-700',
+        desc: 'Rotates physical barrier arm across corridor. 90° = Unrestricted Passage, 45° = Metered Inflow (crowd regulation), 0° = Closed & Locked to eliminate crowd crush danger.',
+        model: 'TowerPro SG90 9g Micro Servo',
+        interface: '50Hz PWM Signal (LEDC Peripheral)',
+        inference: '500-2500μs Pulse Width Control',
+        failover: 'Automatically closes to 0° if severe crowd density is registered by radar.',
+        pin: 'Signal PWM: GPIO 13'
+      },
+      ir_beam: {
+        icon: '⚡',
+        title: 'INFRARED BEAM TRIPWIRE',
+        subtitle: 'Unidirectional Boundary Line Sensor',
+        badge: 'HARDWARE LINE',
+        badgeClass: 'bg-orange-950 text-orange-400 border-orange-700',
+        desc: 'Active photo-electric beam crossing between Breadboard 2 (TX) and Breadboard 1 (RX). Increments physical passage count whenever pedestrian breaks the beam.',
+        model: 'Through-Beam Infrared Phototransistor Pair',
+        interface: 'GPIO Hardware Interrupt (FALLING edge)',
+        inference: '< 5 ms Interrupt Response Time',
+        failover: 'Provides ground-truth cumulative crossing counts independently of the camera.',
+        pin: 'IR Receiver: GPIO 14 (Internal Pull-Up)'
+      },
+      breadboard_1: {
+        icon: '🎛️',
+        title: 'BREADBOARD 1 (MASTER CONTROLLER)',
+        subtitle: 'Primary Physical Node (Right Side)',
+        badge: 'ESP32 MASTER',
+        badgeClass: 'bg-pink-950 text-pink-400 border-pink-700',
+        desc: 'Central controller housing ESP32 Master, Traffic Light LEDs, SG90 Servo Gate, LD2410 Radar, ToF sensor, and OLED display. Bridges to dashboard server via WiFi/Serial.',
+        model: 'ESP32-WROOM-32D 38-Pin Module',
+        interface: 'WiFi 802.11 b/g/n + USB Serial 115200',
+        inference: 'FreeRTOS Dual Core 240MHz',
+        failover: 'Autonomous internal state machine takes over control if laptop disconnects.',
+        pin: 'Pins: GPIO 13, 14, 16, 17, 21, 22, 25, 26, 27'
+      },
+      breadboard_2: {
+        icon: '📡',
+        title: 'BREADBOARD 2 (PERIMETER SLAVE)',
+        subtitle: 'Remote Boundary Node (Left Side)',
+        badge: 'ESP32 SLAVE',
+        badgeClass: 'bg-rose-950 text-rose-400 border-rose-700',
+        desc: 'Dedicated perimeter station across corridor. Reads IR beam interruptions and relays boundary events across corridor to Master using Ra-02 LoRa.',
+        model: 'ESP32-WROOM-32D Dev Board',
+        interface: 'SPI Bus (LoRa) + GPIO Interrupt',
+        inference: 'Low-power battery / USB 5V',
+        failover: 'Transmits packet bursts to Master; buffered offline if link fades.',
+        pin: 'Pins: GPIO 5 (NSS), 18 (SCK), 19 (MISO), 23 (MOSI)'
+      },
+      lora_master: {
+        icon: '📻',
+        title: 'Ra-02 LoRa MODULE (MASTER)',
+        subtitle: 'Long-Range Wireless Transceiver',
+        badge: 'LORA LINK',
+        badgeClass: 'bg-cyan-950 text-cyan-400 border-cyan-700',
+        desc: 'Semtech SX1278 transceiver on Breadboard 1. Receives perimeter beam triggers and sensor alerts without needing common WiFi routers or corridor cables.',
+        model: 'Ai-Thinker Ra-02 (SX1278 433MHz)',
+        interface: 'SPI Bus (up to 10 Mbps)',
+        inference: 'Spread Spectrum Chirp (SF7 / BW 125kHz)',
+        failover: 'Operates in emergency communications mode if WiFi router goes down.',
+        pin: 'SPI: MOSI 23, MISO 19, SCK 18, CS 5, RST 4'
+      },
+      lora_slave: {
+        icon: '📻',
+        title: 'Ra-02 LoRa MODULE (SLAVE)',
+        subtitle: 'Remote Transmitter Node',
+        badge: 'LORA LINK',
+        badgeClass: 'bg-cyan-950 text-cyan-400 border-cyan-700',
+        desc: 'Semtech SX1278 transmitter on Breadboard 2. Broadcasts instantaneous interrupt packets whenever pedestrians break the IR beam line across the corridor.',
+        model: 'Ai-Thinker Ra-02 (SX1278 433MHz)',
+        interface: 'SPI Bus (NSS: GPIO 5)',
+        inference: '+20 dBm Output Power',
+        failover: 'Guarantees reliable multi-hundred meter range even through walls and crowd bodies.',
+        pin: 'SPI: MOSI 23, MISO 19, SCK 18, CS 5, RST 4'
+      },
+      esp32_master: {
+        icon: '🧠',
+        title: 'ESP32 MASTER MICROCONTROLLER',
+        subtitle: 'Dual-Core Tensilica LX6 240MHz',
+        badge: 'CORE MCU',
+        badgeClass: 'bg-emerald-950 text-emerald-400 border-emerald-700',
+        desc: 'Orchestrates the entire hardware subsystem. Polls /api/esp32/status (or reads Serial), sets traffic lights, sweeps SG90 gate, refreshes I2C OLED display, and triggers buzzer.',
+        model: 'NodeMCU-32S / ESP-WROOM-32',
+        interface: 'WiFi + Bluetooth + Serial UART + I2C + PWM',
+        inference: '100% On-Chip Real-Time Control Loop',
+        failover: 'Hardware state machine holds failover rules locally without cloud dependency.',
+        pin: 'GPIO 0-39 / 5V USB Vin'
+      },
+      esp32_slave: {
+        icon: '⚡',
+        title: 'ESP32 SLAVE MICROCONTROLLER',
+        subtitle: 'Boundary Transmitter MCU',
+        badge: 'EDGE MCU',
+        badgeClass: 'bg-rose-950 text-rose-400 border-rose-700',
+        desc: 'Manages Breadboard 2 perimeter operations. Captures high-frequency infrared photo-transistor interrupts and transmits LoRa packets to Master.',
+        model: 'NodeMCU-32S / ESP-WROOM-32',
+        interface: 'SPI + Digital Interrupt GPIO',
+        inference: 'Sub-millisecond Interrupt Latency',
+        failover: 'Runs autonomously on battery / USB.',
+        pin: 'IR Beam In: GPIO 14 | LoRa SPI: GPIO 5, 18, 19, 23'
+      }
+    };
+
+    // Open Inspector Function
+    function openInspector(key) {
+      const data = COMPONENT_DETAILS[key];
+      if (!data) return;
+
+      document.getElementById('inspectIcon').textContent = data.icon;
+      document.getElementById('inspectTitle').textContent = data.title;
+      document.getElementById('inspectSubtitle').textContent = data.subtitle;
+      document.getElementById('inspectDescription').textContent = data.desc;
+
+      const badge = document.getElementById('inspectBadge');
+      badge.textContent = data.badge;
+      badge.className = `text-[10px] px-2 py-0.5 rounded-full border font-bold mono ${data.badgeClass}`;
+
+      document.getElementById('specModel').textContent = data.model;
+      document.getElementById('specInterface').textContent = data.interface;
+      document.getElementById('specInference').textContent = data.inference;
+      document.getElementById('specFailover').textContent = data.failover;
+      document.getElementById('specPin').textContent = data.pin;
+
+      // Highlight pulse on inspector
+      const card = document.getElementById('inspectorCard');
+      card.classList.add('ring-2', 'ring-cyan-400');
+      setTimeout(() => card.classList.remove('ring-2', 'ring-cyan-400'), 400);
+    }
+
+    // State Variables
+    let currentCount = 2;
+    let isCameraOnline = true;
+
+    // Crowd Pedestrian SVG Silhouette Template
+    function getPersonSVG(colorClass = 'text-white') {
+      return `
+        <div class="flex flex-col items-center animate-bounce" style="animation-duration: ${1.5 + Math.random()}s;">
+          <svg class="w-6 h-10 ${colorClass} drop-shadow-[0_2px_8px_rgba(255,255,255,0.4)]" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="4" r="3"/>
+            <path d="M12 8c-3.3 0-6 2.7-6 6v7h3v-7h1v7h4v-7h1v7h3v-7c0-3.3-2.7-6-6-6z"/>
+          </svg>
+        </div>
+      `;
+    }
+
+    // Render Corridor Crowd based on Count
+    function renderCorridorCrowd(count) {
+      const openArea = document.getElementById('openCorridorCrowd');
+      const closeArea = document.getElementById('closeCorridorCrowd');
+
+      // Left Corridor: Always has 2-4 fluid pedestrians
+      const openCount = Math.min(4, Math.max(1, Math.round(count * 0.3) + 1));
+      let openHtml = '';
+      for (let i = 0; i < openCount; i++) {
+        openHtml += getPersonSVG('text-fuchsia-200');
+      }
+      openArea.innerHTML = openHtml;
+
+      // Right Corridor: Scales directly with count
+      const closeCount = count;
+      let closeHtml = '';
+      for (let i = 0; i < closeCount; i++) {
+        const color = count >= 10 ? 'text-red-300' : (count >= 5 ? 'text-amber-200' : 'text-slate-100');
+        closeHtml += getPersonSVG(color);
+      }
+      closeArea.innerHTML = closeHtml || '<span class="text-xs text-slate-500 mono py-8">Corridor Empty</span>';
+    }
+
+    // Update Hardware Actuators (LEDs, Servo Gate Arm, OLED)
+    function updateHardwareDisplay(count, cameraOnline) {
+      const red = document.getElementById('ledRed');
+      const yel = document.getElementById('ledYellow');
+      const grn = document.getElementById('ledGreen');
+      const arm = document.getElementById('physicalGateArm');
+      const armDisplay = document.getElementById('gateAngleDisplay');
+      const posText = document.getElementById('gatePositionText');
+      const radarText = document.getElementById('radarEnergyText');
+      const tofText = document.getElementById('tofDistanceText');
+
+      // Sensor Sim Values
+      const radarEnergy = Math.min(100, count * 7 + 12);
+      const tofDist = Math.max(280, 2000 - count * 95);
+      radarText.textContent = `${radarEnergy}% (${count > 0 ? 'Active' : 'Idle'})`;
+      tofText.textContent = `${tofDist} mm`;
+
+      // Traffic Light & Servo Rules:
+      // < 5   -> GREEN (Gate 90 deg Open)
+      // 5 - 9 -> YELLOW (Gate 45 deg Metered)
+      // >= 10 -> RED (Gate 0 deg Closed & Locked)
+      if (count >= 10) {
+        red.className = 'w-5 h-5 rounded-full bg-red-500 traffic-glow-red border border-red-300 transition-all duration-200';
+        yel.className = 'w-5 h-5 rounded-full bg-yellow-950 border border-yellow-900 transition-all duration-200';
+        grn.className = 'w-5 h-5 rounded-full bg-green-950 border border-green-900 transition-all duration-200';
+
+        // Servo Gate Closed (0 deg)
+        arm.style.transform = 'rotate(0deg)';
+        arm.className = 'h-2 rounded-full bg-gradient-to-r from-red-500 to-rose-600 shadow-[0_0_15px_#f43f5e] origin-left transition-transform duration-500';
+        armDisplay.textContent = 'ARM: LOCKED (0°)';
+        armDisplay.className = 'text-red-400 font-bold';
+        posText.textContent = '0° (LOCKED)';
+        posText.className = 'font-bold text-red-400 text-sm';
+
+        // OLED Content
+        document.getElementById('oled1').textContent = cameraOnline ? 'CPR: RED ALERT!' : 'CPR FAILOVER: RED';
+        document.getElementById('oled2').textContent = `COUNT: ${count} PPL`;
+        document.getElementById('oled3').textContent = 'STATUS: CRITICAL';
+        document.getElementById('oled4').textContent = 'GATE: LOCKED (0D)';
+      } else if (count >= 5) {
+        red.className = 'w-5 h-5 rounded-full bg-red-950 border border-red-900 transition-all duration-200';
+        yel.className = 'w-5 h-5 rounded-full bg-yellow-400 traffic-glow-yellow border border-yellow-200 transition-all duration-200';
+        grn.className = 'w-5 h-5 rounded-full bg-green-950 border border-green-900 transition-all duration-200';
+
+        // Servo Gate Metered (45 deg)
+        arm.style.transform = 'rotate(45deg)';
+        arm.className = 'h-2 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_12px_#eab308] origin-left transition-transform duration-500';
+        armDisplay.textContent = 'ARM: METERED (45°)';
+        armDisplay.className = 'text-yellow-400 font-bold';
+        posText.textContent = '45° (METER)';
+        posText.className = 'font-bold text-yellow-400 text-sm';
+
+        // OLED Content
+        document.getElementById('oled1').textContent = cameraOnline ? 'CPR: WARNING' : 'CPR FAILOVER: WRN';
+        document.getElementById('oled2').textContent = `COUNT: ${count} PPL`;
+        document.getElementById('oled3').textContent = 'STATUS: ELEVATED';
+        document.getElementById('oled4').textContent = 'GATE: METER (45D)';
+      } else {
+        red.className = 'w-5 h-5 rounded-full bg-red-950 border border-red-900 transition-all duration-200';
+        yel.className = 'w-5 h-5 rounded-full bg-yellow-950 border border-yellow-900 transition-all duration-200';
+        grn.className = 'w-5 h-5 rounded-full bg-green-500 traffic-glow-green border border-green-300 transition-all duration-200';
+
+        // Servo Gate Open (90 deg)
+        arm.style.transform = 'rotate(90deg)';
+        arm.className = 'h-2 rounded-full bg-gradient-to-r from-emerald-400 to-green-500 shadow-[0_0_12px_#10b981] origin-left transition-transform duration-500';
+        armDisplay.textContent = 'ARM: OPEN (90°)';
+        armDisplay.className = 'text-emerald-400 font-bold';
+        posText.textContent = '90° (OPEN)';
+        posText.className = 'font-bold text-emerald-400 text-sm';
+
+        // OLED Content
+        document.getElementById('oled1').textContent = cameraOnline ? 'CPR RADAR: LIVE' : 'CPR FAILOVER: OK';
+        document.getElementById('oled2').textContent = `COUNT: ${count} PPL`;
+        document.getElementById('oled3').textContent = 'STATUS: NORMAL';
+        document.getElementById('oled4').textContent = 'GATE: OPEN (90D)';
+      }
+    }
+
+    // Apply Simulation to UI & Emit to Server
+    function applySimulation(count, cameraOnline) {
+      currentCount = count;
+      isCameraOnline = cameraOnline;
+
+      document.getElementById('sliderValBadge').textContent = `${count} Persons`;
+      document.getElementById('crowdSlider').value = count;
+
+      // Mode Pill
+      const modePill = document.getElementById('modePill');
+      const modeDot = document.getElementById('modeDot');
+      const modeText = document.getElementById('modeText');
+      const camDot = document.getElementById('camIndicatorDot');
+
+      if (!cameraOnline) {
+        modePill.className = 'flex items-center gap-2 px-3.5 py-1.5 rounded-xl border mono text-xs font-bold bg-amber-950/70 text-amber-300 border-amber-700/80';
+        modeDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping';
+        modeText.textContent = 'FAILOVER: HARDWARE RADAR';
+        camDot.className = 'absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 border-2 border-slate-900';
+        document.getElementById('failoverBtnText').textContent = 'Restore AI Camera';
+      } else {
+        modePill.className = 'flex items-center gap-2 px-3.5 py-1.5 rounded-xl border mono text-xs font-bold bg-cyan-950/40 text-cyan-400 border-cyan-800/60';
+        modeDot.className = 'w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse';
+        modeText.textContent = 'PRIMARY: AI VISION (YOLO)';
+        camDot.className = 'absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 animate-pulse border-2 border-slate-900';
+        document.getElementById('failoverBtnText').textContent = 'Simulate Camera Failure';
+      }
+
+      renderCorridorCrowd(count);
+      updateHardwareDisplay(count, cameraOnline);
+
+      // Send to server /api/simulate so live dashboard / also synchronizes
+      fetch('/api/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ count, cameraOnline })
+      }).catch(err => console.warn('Simulation sync error:', err));
+    }
+
+    // Slider Event Listener
+    document.getElementById('crowdSlider').addEventListener('input', function(e) {
+      applySimulation(parseInt(e.target.value, 10), isCameraOnline);
+    });
+
+    // Preset Scenarios
+    function setScenario(count) {
+      applySimulation(count, isCameraOnline);
+    }
+
+    // Toggle Camera Failover
+    function toggleFailover() {
+      applySimulation(currentCount, !isCameraOnline);
+    }
+
+    // Listen to Server-Sent Events (SSE) to sync with live YOLO if running
+    const evtSource = new EventSource('/api/stream');
+    evtSource.onmessage = function(event) {
+      try {
+        const payload = JSON.parse(event.data);
+        if (payload.state) {
+          const s = payload.state;
+          // Only sync if user is not actively dragging the slider
+          if (!document.getElementById('crowdSlider').matches(':active')) {
+            const count = s.vision.targetCount || 0;
+            currentCount = count;
+            isCameraOnline = s.cameraOnline;
+            document.getElementById('crowdSlider').value = count;
+            document.getElementById('sliderValBadge').textContent = `${count} Persons`;
+            renderCorridorCrowd(count);
+            updateHardwareDisplay(count, isCameraOnline);
+          }
+        }
+      } catch (err) {
+        console.error('SSE Error:', err);
+      }
+    };
+
+    // Initial render
+    applySimulation(2, true);
+  </script>
+</body>
+</html>

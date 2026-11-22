@@ -1,22 +1,52 @@
-# Node Dependencies
+# Node.js Dependencies & Builds
 node_modules/
-backend/node_modules/
-frontend/node_modules/
-
-# Production Build Outputs
+*/node_modules/
 dist/
-frontend/dist/
+build/
+.next/
+
+# Python Cache & Bytecode
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Large ML Weights & Model Checkpoints
+*.pt
+*.pth
+*.onnx
+*.engine
+*.tflite
+yolo11n.pt
+CPR-AI/yolo11n.pt
+
+# Large Media & Video Files
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# Scratch & Temporary Directories
+scratch/
+*.tmp
+*.bak
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
 
 # Cloned External Reference Repositories
 frontend-slides/
 ui-ux-pro-max-skill/
-
-# Python Cache & Scratch Files
-__pycache__/
-*.py[cod]
-*$py.class
-scratch_*.py
-inspect_*.py
 
 # System & Local Logs
 *.log
