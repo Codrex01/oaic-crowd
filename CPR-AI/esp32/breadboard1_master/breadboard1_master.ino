@@ -35,10 +35,13 @@
 // -----------------------------------------------------------------------------
 
 // Communication Switches
-#define ENABLE_WIFI       false          // Set to true if connecting via Wi-Fi hotspot
+#define ENABLE_WIFI       false          // Set to true if connecting via Wi-Fi hotspot, or false for zero-drop USB Serial mode
 const char* WIFI_SSID     = "Your_Hotspot_Name";
 const char* WIFI_PASS     = "Your_Hotspot_Password";
-const char* SERVER_URL    = "http://192.168.1.100:5000/api/esp32/status"; // Replace with your laptop IP
+// If using WiFi mode, enter your local laptop IP (port 3000) or public Render URL:
+const char* SERVER_URL    = "http://192.168.1.100:3000/api/esp32/status"; 
+// Or for direct Cloud polling over WiFi:
+// const char* SERVER_URL = "https://oaic-crowd.onrender.com/api/esp32/status";
 
 // LED Hardware Type
 #define USE_RGB_3IN1_LED  true           // Set true for 3-in-1 RGB LED, false for 3 discrete LEDs
