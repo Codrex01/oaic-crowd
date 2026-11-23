@@ -5,8 +5,8 @@ from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 
-pptx_path = r"/Users/subhadip/subhansu'/oaic-crowd/docs/pitch/Odisha_AI_Hackathon_Idea_Pitchdeck_Template_White_Theme.pptx"
-assets_dir = r"/Users/subhadip/subhansu'/oaic-crowd/pitch_assets"
+pptx_path = r"C:\Users\subha\Downloads\crowd-pressure-radar\Odisha_AI_Hackathon_Idea_Pitchdeck_Template_White_Theme.pptx"
+assets_dir = r"C:\Users\subha\Downloads\crowd-pressure-radar\pitch_assets"
 
 prs = Presentation(pptx_path)
 
@@ -288,6 +288,6 @@ for s in slide8.shapes:
             font_size=12, color=COLOR_SLATE)
 
 # Save the updated presentation
-output_pptx = r"/Users/subhadip/subhansu'/oaic-crowd/docs/pitch/Odisha_AI_Hackathon_Idea_Pitchdeck_Template_White_Theme.pptx"
+output_pptx = r"C:\Users\subha\Downloads\crowd-pressure-radar\Odisha_AI_Hackathon_Idea_Pitchdeck_Template_White_Theme.pptx"
 prs.save(output_pptx)
 print(f"\nSuccessfully saved updated presentation to: {output_pptx}")

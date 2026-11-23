@@ -1,10 +1,10 @@
 import os
 from PIL import Image, ImageDraw, ImageFont
 
-assets_dir = r"/Users/subhadip/subhansu'/oaic-crowd/pitch_assets"
-prototype_img_path = r"/Users/subhadip/subhansu'/oaic-crowd/prototype_render.jpg"
+assets_dir = r"C:\Users\subha\Downloads\crowd-pressure-radar\pitch_assets"
+prototype_img_path = r"C:\Users\subha\Downloads\crowd-pressure-radar\prototype_render.jpg"
 wokwi_img_path = r"C:\Users\subha\.gemini\antigravity\brain\6f3a8bf1-4c2b-4d07-b1a6-78e0e921ebee\.user_uploaded\media_1795023786550_1022c2ca.jpg"
-dashboard_img_path = r"/Users/subhadip/subhansu'/oaic-crowd/docs/screenshots/screenshot_detail_1280.png"
+dashboard_img_path = r"C:\Users\subha\Downloads\crowd-pressure-radar\screenshot_detail_1280.png"
 
 # 1. Slide 1 Hero Prototype: Crop and polish 3D prototype render
 if os.path.exists(prototype_img_path):
