@@ -14,7 +14,7 @@ from reportlab.platypus import (
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfgen import canvas
 
-BASE_DIR = r"C:\Users\subha\Downloads\crowd-pressure-radar"
+BASE_DIR = r"/Users/subhadip/subhansu'/oaic-crowd"
 ARCH_IMG = os.path.join(BASE_DIR, "system_architecture_diagram.png")
 FLOW_IMG = os.path.join(BASE_DIR, "algorithm_flowchart.png")
 PDF_PATH = os.path.join(BASE_DIR, "Crowd_Pressure_Radar_Technical_Report.pdf")

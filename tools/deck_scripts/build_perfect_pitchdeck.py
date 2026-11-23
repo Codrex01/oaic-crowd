@@ -6,9 +6,9 @@ from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 
-backup_path = r"C:\Users\subha\Downloads\crowd-pressure-radar\Odisha_AI_Hackathon_Idea_Pitchdeck_Template_ORIGINAL_BACKUP.pptx"
-target_path = r"C:\Users\subha\Downloads\crowd-pressure-radar\Odisha_AI_Hackathon_Idea_Pitchdeck_Template_White_Theme.pptx"
-assets_dir = r"C:\Users\subha\Downloads\crowd-pressure-radar\pitch_assets"
+backup_path = r"/Users/subhadip/subhansu'/oaic-crowd/docs/pitch/Odisha_AI_Hackathon_Idea_Pitchdeck_Template_ORIGINAL_BACKUP.pptx"
+target_path = r"/Users/subhadip/subhansu'/oaic-crowd/docs/pitch/Odisha_AI_Hackathon_Idea_Pitchdeck_Template_White_Theme.pptx"
+assets_dir = r"/Users/subhadip/subhansu'/oaic-crowd/pitch_assets"
 
 # Restore clean template from backup
 shutil.copyfile(backup_path, target_path)

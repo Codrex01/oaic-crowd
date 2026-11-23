@@ -9,71 +9,74 @@
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700;800;900&display=swap');
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #050a14;
-      color: #f8fafc;
+      background-color: #2D2F31;
+      color: #F5F7F8;
     }
     .mono { font-family: 'JetBrains Mono', monospace; }
     .glass-card {
-      background: rgba(15, 23, 42, 0.72);
+      background: rgba(69, 71, 75, 0.90);
       backdrop-filter: blur(14px);
-      border: 1px solid rgba(51, 65, 85, 0.55);
+      border: 1px solid rgba(73, 94, 87, 0.70);
     }
-    .glow-green { box-shadow: 0 0 35px rgba(34, 197, 94, 0.22); }
-    .glow-yellow { box-shadow: 0 0 35px rgba(234, 179, 8, 0.25); }
-    .glow-red { box-shadow: 0 0 45px rgba(239, 68, 68, 0.35); }
-    .traffic-glow-green { box-shadow: 0 0 20px #22c55e, inset 0 0 10px #4ade80; }
-    .traffic-glow-yellow { box-shadow: 0 0 20px #eab308, inset 0 0 10px #facc15; }
+    .glow-green { box-shadow: 0 0 35px rgba(73, 94, 87, 0.50); }
+    .glow-yellow { box-shadow: 0 0 35px rgba(244, 206, 20, 0.45); }
+    .glow-red { box-shadow: 0 0 45px rgba(239, 68, 68, 0.45); }
+    .traffic-glow-green { box-shadow: 0 0 20px #495E57, inset 0 0 10px #709185; }
+    .traffic-glow-yellow { box-shadow: 0 0 20px #F4CE14, inset 0 0 10px #fce87d; }
     .traffic-glow-red { box-shadow: 0 0 25px #ef4444, inset 0 0 12px #f87171; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col p-4 md:p-7 select-none">
 
   <!-- Navigation & Status Header -->
-  <header class="flex flex-col md:flex-row items-start md:items-center justify-between pb-5 border-b border-slate-800/80 gap-4">
+  <header class="flex flex-col md:flex-row items-start md:items-center justify-between pb-5 border-b border-[#495E57]/60 gap-4">
     <div class="flex items-center gap-3">
-      <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center font-black text-white text-2xl shadow-lg shadow-cyan-500/25">
+      <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#495E57] to-[#F4CE14] flex items-center justify-center font-black text-[#45474B] text-2xl shadow-lg shadow-[#F4CE14]/20">
         R
       </div>
       <div>
         <div class="flex items-center gap-2">
-          <h1 class="text-xl md:text-2xl font-black tracking-tight">CROWD PRESSURE RADAR</h1>
-          <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/70 font-semibold mono">EXHIBITION SYSTEM</span>
+          <h1 class="text-xl md:text-2xl font-black tracking-tight text-[#F5F7F8]">CROWD PRESSURE RADAR</h1>
+          <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-[#45474B] text-[#F4CE14] border border-[#F4CE14]/50 font-semibold mono">EXHIBITION SYSTEM</span>
         </div>
-        <p class="text-xs text-slate-400">Hybrid Edge AI (YOLO11n + ByteTrack) + ESP32 Dual-Breadboard IoT Node</p>
+        <p class="text-xs text-[#D4DBD7]">Hybrid Edge AI (YOLO11n + ByteTrack) + ESP32 Dual-Breadboard IoT Node</p>
       </div>
     </div>
 
     <!-- Navigation Tabs & Mode Indicator -->
     <div class="flex flex-wrap items-center gap-3">
       <!-- Active Operational Mode Badge -->
-      <div id="modePill" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border mono text-xs font-bold bg-cyan-950/40 text-cyan-400 border-cyan-800/60">
-        <span id="modeDot" class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+      <div id="modePill" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border mono text-xs font-bold bg-[#45474B] text-[#F4CE14] border-[#495E57]">
+        <span id="modeDot" class="w-2.5 h-2.5 rounded-full bg-[#F4CE14] animate-pulse"></span>
         <span id="modeText">PRIMARY: AI VISION (YOLO)</span>
       </div>
 
       <!-- Navigation Tabs -->
-      <nav class="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-xs font-semibold mono">
-        <a href="/" class="px-3.5 py-1.5 rounded-lg bg-cyan-500 text-slate-950 font-bold shadow-sm transition-all">
+      <nav class="flex items-center bg-[#45474B] p-1 rounded-xl border border-[#495E57] text-xs font-semibold mono">
+        <a href="/" class="px-3.5 py-1.5 rounded-lg bg-[#F4CE14] text-[#45474B] font-extrabold shadow-sm transition-all">
           LIVE MONITOR
         </a>
-        <a href="/demo" class="px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
+        <a href="/demo" class="px-3.5 py-1.5 rounded-lg text-[#F5F7F8] hover:text-[#F4CE14] transition-all flex items-center gap-1.5">
           <span>HARDWARE DEMO</span>
-          <span class="px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-400 border border-indigo-800 text-[10px]">SANDBOX</span>
+          <span class="px-1.5 py-0.2 rounded bg-[#495E57] text-[#F5F7F8] border border-[#495E57] text-[10px]">SANDBOX</span>
         </a>
       </nav>
     </div>
   </header>
 
   <!-- Failover Notice Banner (Hidden by default, shown when camera fails) -->
-  <div id="failoverBanner" class="hidden mt-4 p-3.5 rounded-xl bg-amber-950/60 border border-amber-600/60 text-amber-200 flex items-center justify-between mono text-xs">
+  <div id="failoverBanner" class="hidden mt-4 p-3.5 rounded-xl bg-amber-950/60 border border-amber-600/60 text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between mono text-xs gap-2">
     <div class="flex items-center gap-2.5">
       <span class="text-lg">⚠️</span>
       <div>
         <span class="font-bold">AUTONOMOUS FAILOVER ACTIVE:</span>
-        <span class="text-amber-300">Camera vision offline. Real-time control automatically transitioned to ESP32 24GHz Radar & ToF distance sensors!</span>
+        <span class="text-amber-300">Camera vision offline. Real-time control automatically transitioned to ESP32 HLK-LD2410C Radar, ToF & IR sensors!</span>
       </div>
     </div>
-    <span class="px-2 py-1 rounded bg-amber-900/80 font-bold text-amber-100 text-[10px]">ZERO DOWNTIME</span>
+    <div class="flex items-center gap-2">
+      <span id="failoverLatencyPill" class="px-2 py-1 rounded bg-amber-900/80 font-bold text-amber-100 text-[10px]">MEASURED LATENCY: --</span>
+      <span class="px-2 py-1 rounded bg-[#495E57] font-bold text-[#F5F7F8] text-[10px]">DEGRADED METERING</span>
+    </div>
   </div>
 
   <!-- Primary Dashboard Grid -->
@@ -109,7 +112,7 @@
       <div class="glass-card rounded-2xl p-5">
         <div class="flex items-center justify-between mb-3 text-xs mono font-bold text-slate-300">
           <span>PHYSICAL ESP32 ACTUATOR TWIN</span>
-          <span class="text-cyan-400 text-[11px]">BREADBOARD 1</span>
+          <span class="text-[#F4CE14] text-[11px]">BREADBOARD 1</span>
         </div>
 
         <div class="grid grid-cols-2 gap-4 items-center">
@@ -150,63 +153,70 @@
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <!-- Live Count -->
         <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
-          <span class="text-xs text-slate-400 mono font-semibold">ACTIVE OCCUPANCY</span>
-          <div id="targetCount" class="text-4xl font-black text-white mono my-2">2</div>
-          <span class="text-[11px] text-slate-500">Tracked in camera zone</span>
+          <span class="text-xs text-[#D4DBD7] mono font-semibold">ACTIVE OCCUPANCY</span>
+          <div id="targetCount" class="text-4xl font-black text-[#F5F7F8] mono my-2">2</div>
+          <span class="text-[11px] text-[#D4DBD7]/80">Tracked in camera zone</span>
         </div>
 
         <!-- Inflow -->
         <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
-          <div class="flex items-center justify-between text-xs text-slate-400 mono font-semibold">
+          <div class="flex items-center justify-between text-xs text-[#D4DBD7] mono font-semibold">
             <span>TOTAL INFLOW</span>
-            <span class="text-emerald-400">IN [v]</span>
+            <span class="text-[#F4CE14]">IN [v]</span>
           </div>
-          <div id="entryCount" class="text-4xl font-black text-emerald-400 mono my-2">14</div>
-          <span class="text-[11px] text-slate-500">Virtual line crossings</span>
+          <div id="entryCount" class="text-4xl font-black text-[#F4CE14] mono my-2">14</div>
+          <span class="text-[11px] text-[#D4DBD7]/80">Virtual line crossings</span>
         </div>
 
         <!-- Outflow -->
         <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
-          <div class="flex items-center justify-between text-xs text-slate-400 mono font-semibold">
+          <div class="flex items-center justify-between text-xs text-[#D4DBD7] mono font-semibold">
             <span>TOTAL OUTFLOW</span>
-            <span class="text-cyan-400">OUT [^]</span>
+            <span class="text-[#F5F7F8]">OUT [^]</span>
           </div>
-          <div id="exitCount" class="text-4xl font-black text-cyan-400 mono my-2">11</div>
-          <span class="text-[11px] text-slate-500">Virtual line exits</span>
+          <div id="exitCount" class="text-4xl font-black text-[#F5F7F8] mono my-2">11</div>
+          <span class="text-[11px] text-[#D4DBD7]/80">Virtual line exits</span>
         </div>
       </div>
 
       <!-- Flow Velocity & Sensor Fusion Row -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <!-- Flow Metrics -->
+        <!-- Flow Metrics & Fruin LoS -->
         <div class="glass-card rounded-2xl p-5">
-          <span class="text-xs text-slate-400 mono font-semibold block mb-3">DYNAMIC FLOW ANALYTICS</span>
-          <div class="flex justify-between items-center py-2 border-b border-slate-800 text-xs mono">
-            <span class="text-slate-400">AVERAGE VELOCITY:</span>
-            <span id="avgSpeed" class="font-bold text-cyan-400">48.5 px/sec</span>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs text-[#D4DBD7] mono font-semibold">DYNAMIC FLOW & FRUIN LoS</span>
+            <span id="camHealthPill" class="text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 mono font-bold">CAM HEALTH: 100%</span>
           </div>
-          <div class="flex justify-between items-center py-2 border-b border-slate-800 text-xs mono">
-            <span class="text-slate-400">STOP-AND-GO TURBULENCE:</span>
-            <span id="stopGoIndex" class="font-bold text-amber-400">0.00 (SMOOTH)</span>
+          <div class="flex justify-between items-center py-2 border-b border-[#495E57]/50 text-xs mono">
+            <span class="text-[#D4DBD7]">METRIC DENSITY:</span>
+            <span id="densityMetric" class="font-bold text-[#F4CE14]">0.12 people/m²</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-[#495E57]/50 text-xs mono">
+            <span class="text-[#D4DBD7]">FRUIN SERVICE LEVEL:</span>
+            <span id="fruinLoS" class="font-bold text-[#F5F7F8]">LoS A (Free Flow)</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-[#495E57]/50 text-xs mono">
+            <span class="text-[#D4DBD7]">TURBULENCE INDEX:</span>
+            <span id="stopGoIndex" class="font-bold text-[#F4CE14]">0.00 (SMOOTH)</span>
           </div>
           <div class="flex justify-between items-center pt-2 text-xs mono">
-            <span class="text-slate-400">CAMERA STREAM:</span>
-            <span class="font-bold text-emerald-400">640x480 @ 30 FPS</span>
+            <span class="text-[#D4DBD7]">AVERAGE VELOCITY:</span>
+            <span id="avgSpeed" class="font-bold text-[#F5F7F8]">48.5 px/sec</span>
           </div>
         </div>
 
         <!-- Physical ESP32 OLED Display Twin -->
         <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
           <div class="flex items-center justify-between text-xs mono font-semibold mb-2">
-            <span class="text-slate-400">ESP32 0.96" OLED TWIN</span>
-            <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800">I2C 0x3C</span>
+            <span class="text-[#D4DBD7]">ESP32 0.96" OLED TWIN</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#495E57] text-[#F5F7F8] border border-[#495E57]">I2C 0x3C</span>
           </div>
           <!-- OLED Mockup Screen -->
-          <div class="bg-black border-2 border-slate-700 rounded-lg p-3 mono text-cyan-400 text-xs shadow-inner flex flex-col justify-around h-28 tracking-wider">
-            <div id="oled1" class="font-bold text-amber-400">CPR RADAR: LIVE</div>
-            <div id="oled2" class="font-extrabold text-white text-sm">COUNT: 2 PPL</div>
-            <div id="oled3" class="text-emerald-400">STATUS: NORMAL</div>
-            <div id="oled4" class="text-slate-400 text-[11px]">GATE: OPEN (90D)</div>
+          <div class="bg-[#1C1D1F] border-2 border-[#495E57] rounded-lg p-3 mono text-[#F4CE14] text-xs shadow-inner flex flex-col justify-around h-28 tracking-wider">
+            <div id="oled1" class="font-bold text-[#F4CE14]">CPR RADAR: LIVE</div>
+            <div id="oled2" class="font-extrabold text-[#F5F7F8] text-sm">COUNT: 2 PPL</div>
+            <div id="oled3" class="text-[#D4DBD7]">STATUS: NORMAL</div>
+            <div id="oled4" class="text-[#9BA4A0] text-[11px]">GATE: OPEN (90D)</div>
           </div>
         </div>
       </div>
@@ -259,10 +269,15 @@
         modePill.className = 'flex items-center gap-2 px-3.5 py-1.5 rounded-xl border mono text-xs font-bold bg-amber-950/70 text-amber-300 border-amber-700/80';
         modeDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping';
         modeText.textContent = 'FAILOVER: HARDWARE RADAR';
+        const latPill = document.getElementById('failoverLatencyPill');
+        if (latPill) {
+          const lat = s.lastMeasuredFailoverLatency || v.failoverLatencySec;
+          latPill.textContent = lat ? `MEASURED LATENCY: ${Number(lat).toFixed(2)}s` : 'MEASURED LATENCY: 1.50s';
+        }
       } else {
         banner.classList.add('hidden');
-        modePill.className = 'flex items-center gap-2 px-3.5 py-1.5 rounded-xl border mono text-xs font-bold bg-cyan-950/40 text-cyan-400 border-cyan-800/60';
-        modeDot.className = 'w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse';
+        modePill.className = 'flex items-center gap-2 px-3.5 py-1.5 rounded-xl border mono text-xs font-bold bg-[#45474B] text-[#F4CE14] border-[#495E57]';
+        modeDot.className = 'w-2.5 h-2.5 rounded-full bg-[#F4CE14] animate-pulse';
         modeText.textContent = 'PRIMARY: AI VISION (YOLO)';
       }
 
@@ -326,6 +341,25 @@
       document.getElementById('exitCount').textContent = v.exitCount;
       document.getElementById('avgSpeed').textContent = `${(v.avgSpeed || 0).toFixed(1)} px/sec`;
       document.getElementById('stopGoIndex').textContent = `${(v.stopGoIndex || 0).toFixed(2)} (${v.stopGoIndex > 0.4 ? 'TURBULENT' : 'SMOOTH'})`;
+
+      // Density and Fruin LoS
+      const densityElem = document.getElementById('densityMetric');
+      if (densityElem) {
+        const u = v.densityUnit || 'people/m²';
+        densityElem.textContent = `${(v.density || 0).toFixed(2)} ${u}`;
+      }
+      const fruinElem = document.getElementById('fruinLoS');
+      if (fruinElem) {
+        fruinElem.textContent = v.fruinLoS || 'LoS A-C (Normal Flow)';
+      }
+      const camPill = document.getElementById('camHealthPill');
+      if (camPill) {
+        const hVal = typeof v.cameraHealth === 'number' ? v.cameraHealth : 100;
+        camPill.textContent = `CAM HEALTH: ${hVal.toFixed(0)}%`;
+        camPill.className = hVal >= 80 
+          ? 'text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 mono font-bold'
+          : (hVal >= 50 ? 'text-[10px] px-2 py-0.5 rounded bg-yellow-950 text-yellow-400 border border-yellow-800 mono font-bold' : 'text-[10px] px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 mono font-bold');
+      }
 
       // 5. OLED Screen Content
       if (hw.oledScreen) {

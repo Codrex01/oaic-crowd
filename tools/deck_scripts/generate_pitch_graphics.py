@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
 
-os.makedirs(r"C:\Users\subha\Downloads\crowd-pressure-radar\pitch_assets", exist_ok=True)
-assets_dir = r"C:\Users\subha\Downloads\crowd-pressure-radar\pitch_assets"
+os.makedirs(r"/Users/subhadip/subhansu'/oaic-crowd/pitch_assets", exist_ok=True)
+assets_dir = r"/Users/subhadip/subhansu'/oaic-crowd/pitch_assets"
 
 # Colors matching the presentation template
 COLOR_CHARCOAL = "#242D39"

@@ -5,7 +5,7 @@ from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 
-pptx_path = r"C:\Users\subha\Downloads\crowd-pressure-radar\Odisha_AI_Hackathon_Idea_Pitchdeck_Template_White_Theme.pptx"
+pptx_path = r"/Users/subhadip/subhansu'/oaic-crowd/docs/pitch/Odisha_AI_Hackathon_Idea_Pitchdeck_Template_White_Theme.pptx"
 prs = Presentation(pptx_path)
 
 # Theme Colors

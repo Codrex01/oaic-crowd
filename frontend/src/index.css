@@ -8,89 +8,89 @@
    ============================================================================ */
 
 :root {
-  /* Surface Tokens (Light Mode) */
-  --surface-base: #F8FAFC;
+  /* Surface Tokens (Color Hunt Palette: #45474B, #495E57, #F4CE14, #F5F7F8) */
+  --surface-base: #F5F7F8;
   --surface-raised: #FFFFFF;
-  --surface-sunken: #F1F5F9;
-  --surface-overlay: #E2E8F0;
+  --surface-sunken: #E8ECEE;
+  --surface-overlay: #DDE3E5;
 
   /* Border Tokens */
-  --border-subtle: #E2E8F0;
-  --border-strong: #CBD5E1;
+  --border-subtle: #D0D7D9;
+  --border-strong: #495E57;
 
   /* Text Tokens */
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #64748B;
+  --text-primary: #45474B;
+  --text-secondary: #495E57;
+  --text-muted: #6B7280;
 
   /* Accent & Focus */
-  --accent-default: #2563EB;
-  --accent-hover: #1D4ED8;
-  --accent-focus-ring: #2563EB;
+  --accent-default: #F4CE14;
+  --accent-hover: #E0BC0B;
+  --accent-focus-ring: #F4CE14;
 
   /* Quad-Coded Status Tokens */
-  --status-clear-text: #15803D;
-  --status-clear-bg: #F0FDF4;
-  --status-clear-border: #86EFAC;
-  --status-clear-chart: #16A34A;
+  --status-clear-text: #2E5A44;
+  --status-clear-bg: #E8F0EC;
+  --status-clear-border: #495E57;
+  --status-clear-chart: #495E57;
 
-  --status-building-text: #B45309;
-  --status-building-bg: #FFFBEB;
-  --status-building-border: #FDE68A;
-  --status-building-chart: #D97706;
+  --status-building-text: #8C7400;
+  --status-building-bg: #FEF9D9;
+  --status-building-border: #F4CE14;
+  --status-building-chart: #F4CE14;
 
-  --status-danger-text: #B91C1C;
-  --status-danger-bg: #FEF2F2;
-  --status-danger-border: #FECACA;
+  --status-danger-text: #991B1B;
+  --status-danger-bg: #FEE2E2;
+  --status-danger-border: #EF4444;
   --status-danger-chart: #DC2626;
 
-  --status-offline-text: #475569;
-  --status-offline-bg: #F1F5F9;
-  --status-offline-border: #CBD5E1;
-  --status-offline-chart: #64748B;
+  --status-offline-text: #45474B;
+  --status-offline-bg: #F5F7F8;
+  --status-offline-border: #D0D7D9;
+  --status-offline-chart: #6B7280;
 }
 
 .dark {
-  /* Surface Tokens (Dark Mode Default for Operations) */
-  --surface-base: #0B0F17;
-  --surface-raised: #111827;
-  --surface-sunken: #070A10;
-  --surface-overlay: #1F2937;
+  /* Surface Tokens (Dark Mode: #45474B Charcoal Base, #495E57 Sage Accent, #F4CE14 Yellow Gold, #F5F7F8 Crisp White) */
+  --surface-base: #2D2F31;
+  --surface-raised: #45474B;
+  --surface-sunken: #222325;
+  --surface-overlay: #495E57;
 
   /* Border Tokens */
-  --border-subtle: #1F2937;
-  --border-strong: #374151;
+  --border-subtle: rgba(73, 94, 87, 0.45);
+  --border-strong: #495E57;
 
   /* Text Tokens */
-  --text-primary: #F9FAFB;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
+  --text-primary: #F5F7F8;
+  --text-secondary: #D4DBD7;
+  --text-muted: #9BA4A0;
 
   /* Accent & Focus */
-  --accent-default: #3B82F6;
-  --accent-hover: #2563EB;
-  --accent-focus-ring: #3B82F6;
+  --accent-default: #F4CE14;
+  --accent-hover: #F8D949;
+  --accent-focus-ring: #F4CE14;
 
   /* Quad-Coded Status Tokens */
-  --status-clear-text: #4ADE80;
-  --status-clear-bg: #052E16;
-  --status-clear-border: #166534;
-  --status-clear-chart: #22C55E;
+  --status-clear-text: #A8D5BA;
+  --status-clear-bg: #2B3A34;
+  --status-clear-border: #495E57;
+  --status-clear-chart: #495E57;
 
-  --status-building-text: #FBBF24;
-  --status-building-bg: #451A03;
-  --status-building-border: #92400E;
-  --status-building-chart: #F59E0B;
+  --status-building-text: #FDE68A;
+  --status-building-bg: #4E4205;
+  --status-building-border: #F4CE14;
+  --status-building-chart: #F4CE14;
 
-  --status-danger-text: #F87171;
-  --status-danger-bg: #450A0A;
-  --status-danger-border: #991B1B;
+  --status-danger-text: #FCA5A5;
+  --status-danger-bg: #4B1A1A;
+  --status-danger-border: #EF4444;
   --status-danger-chart: #EF4444;
 
   --status-offline-text: #9CA3AF;
-  --status-offline-bg: #1F2937;
-  --status-offline-border: #374151;
-  --status-offline-chart: #64748B;
+  --status-offline-bg: #35373A;
+  --status-offline-border: #45474B;
+  --status-offline-chart: #6B7280;
 }
 
 /* Base Document Styles */

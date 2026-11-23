@@ -1,8 +1,8 @@
 import os
 import win32com.client
 
-pptx_path = os.path.abspath(r"C:\Users\subha\Downloads\crowd-pressure-radar\Odisha_AI_Hackathon_Idea_Pitchdeck_Template_White_Theme.pptx")
-output_dir = os.path.abspath(r"C:\Users\subha\Downloads\crowd-pressure-radar\pitch_slides_png")
+pptx_path = os.path.abspath(r"/Users/subhadip/subhansu'/oaic-crowd/docs/pitch/Odisha_AI_Hackathon_Idea_Pitchdeck_Template_White_Theme.pptx")
+output_dir = os.path.abspath(r"/Users/subhadip/subhansu'/oaic-crowd/pitch_slides_png")
 os.makedirs(output_dir, exist_ok=True)
 
 powerpoint = win32com.client.Dispatch("PowerPoint.Application")
